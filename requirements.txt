@@ -1,0 +1,13 @@
+asgiref==3.10.0
+charset-normalizer==3.4.4
+crispy-bootstrap5==2025.6
+Django==5.2.7
+django-crispy-forms==2.4
+django-filter==25.2
+et_xmlfile==2.0.0
+openpyxl==3.1.5
+pillow==12.0.0
+python-decouple==3.8
+reportlab==4.4.4
+sqlparse==0.5.3
+tzdata==2025.2
