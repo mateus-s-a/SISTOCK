@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-sign-in-alt"></i> Entrar no Sistema</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                </form>
+                <hr>
+                <p class="text-center">
+                    Não tem conta? <a href="{% url 'accounts:register' %}">Registre-se aqui</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Alertas de Estoque - SISTOCK{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Alertas de Estoque</h3>
+    <a href="{% url 'products:product_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-box me-1"></i> Ver Produtos
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Produto</th>
+                    <th class="text-end">Estoque Atual</th>
+                    <th class="text-end">Estoque Mínimo</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in low_stock_products %}
+                <tr>
+                    <td>{{ p.name }}</td>
+                    <td class="text-end">{{ p.current_stock }}</td>
+                    <td class="text-end">{{ p.minimum_stock }}</td>
+                    <td>
+                        {% if p.current_stock == 0 %}
+                        <span class="badge bg-danger">Sem estoque</span>
+                        {% elif p.current_stock < p.minimum_stock %} <span class="badge bg-warning text-dark">Abaixo do
+                            mínimo</span>
+                            {% else %}
+                            <span class="badge bg-success">OK</span>
+                            {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'inventory:movement_create' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-cart-plus me-1"></i> Repor
+                        </a>
+                        <a href="{% url 'products:product_list' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-box-open me-1"></i> Detalhes
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Nenhum alerta de estoque no momento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3">
+    <i class="fas fa-info-circle me-1"></i> Estes alertas usam dados simulados; a lógica real será integrada após os
+    models.
+</div>
+
+{% endblock %}

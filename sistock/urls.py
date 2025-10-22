@@ -18,18 +18,27 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.shortcuts import redirect
+
+
+def redirect_to_dashboard(request):
+    """Redireciona ao Dashboard"""
+    return redirect('inventory:dashboard')
+
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
 
+    # Apps URLs
     path('accounts/', include('apps.accounts.urls')),
     path('inventory/', include('apps.inventory.urls')),
     path('products/', include('apps.products.urls')),
     path('suppliers/', include('apps.suppliers.urls')),
     path('reports/', include('apps.reports.urls')),
 
-    path('', RedirectView.as_view(url='/inventory/dashboard/', permanent=True)),
+    # Root redirect
+    path('', redirect_to_dashboard, name='root'),
 ]
 
 

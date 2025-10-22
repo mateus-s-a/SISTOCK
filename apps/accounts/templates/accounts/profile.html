@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-user"></i> Meu Perfil</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Usuário:</strong> {{ user.username }}</p>
+                <p><strong>Nome:</strong> {{ user.get_full_name|default:"Não informado" }}</p>
+                <p><strong>Email:</strong> {{ user.email|default:"Não informado" }}</p>
+                <p><strong>Último acesso:</strong> {{ user.last_login|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
