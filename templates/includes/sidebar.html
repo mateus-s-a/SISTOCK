@@ -1,0 +1,31 @@
+<div class="bg-dark border-right" id="sidebar-wrapper">
+    <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom">
+        <i class="fas fa-boxes me-2"></i>SISTOCK
+    </div>
+    
+    <div class="list-group list-group-flush my-3">
+        <a href="{% url 'inventory:dashboard' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </a>
+        
+        <a href="{% url 'products:product_list' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-box me-2"></i>Produtos
+        </a>
+        
+        <a href="{% url 'inventory:movement_list' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-exchange-alt me-2"></i>Movimentações
+        </a>
+        
+        <a href="{% url 'suppliers:supplier_list' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-truck me-2"></i>Fornecedores
+        </a>
+        
+        <a href="{% url 'reports:report_index' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-chart-bar me-2"></i>Relatórios
+        </a>
+        
+        <a href="{% url 'inventory:stock_alerts' %}" class="list-group-item list-group-item-action bg-transparent second-text fw-bold">
+            <i class="fas fa-exclamation-triangle me-2"></i>Alertas
+        </a>
+    </div>
+</div>
