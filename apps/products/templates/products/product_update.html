@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Produto - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Produto</h3>
+    <a href="{% url 'products:product_detail' request.resolver_match.kwargs.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nome do Produto</label>
+                    <input type="text" class="form-control" name="name" value="Produto {{ request.resolver_match.kwargs.pk }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">SKU</label>
+                    <input type="text" class="form-control" name="sku" value="PRD00{{ request.resolver_match.kwargs.pk }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Preço</label>
+                    <input type="number" step="0.01" class="form-control" name="price" value="25.99" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" name="category">
+                        <option value="1" selected>Eletrônicos</option>
+                        <option value="2">Roupas</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Estoque Atual</label>
+                    <input type="number" min="0" class="form-control" name="stock" value="50" readonly>
+                    <div class="form-text">Use movimentações para alterar estoque</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Estoque Mínimo</label>
+                    <input type="number" min="0" class="form-control" name="minimum_stock" value="10" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-control" name="description" rows="3">Descrição do produto...</textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                </button>
+                <a href="{% url 'products:product_detail' request.resolver_match.kwargs.pk %}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

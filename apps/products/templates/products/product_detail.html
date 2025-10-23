@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-box me-2"></i>{{ product.name }}</h3>
+    <div>
+        <a href="{% url 'products:product_update' product.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-edit me-1"></i> Editar
+        </a>
+        <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted">Nome</div>
+                        <div class="fw-semibold">{{ product.name }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted">SKU</div>
+                        <code class="fw-semibold">{{ product.sku }}</code>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted">Preço</div>
+                        <div class="fw-semibold fs-5">R$ {{ product.price }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted">Descrição</div>
+                        <p>{{ product.description|default:"Sem descrição" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Informações de Estoque</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="text-muted">Estoque Atual</div>
+                    <div class="fw-bold fs-4">{{ product.stock }}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted">Estoque Mínimo</div>
+                    <div>10</div>
+                </div>
+                <div>
+                    <a href="{% url 'inventory:movement_create' %}" class="btn btn-primary btn-sm w-100">
+                        <i class="fas fa-plus me-1"></i> Nova Movimentação
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3">
+    <i class="fas fa-info-circle me-1"></i> 
+    Dados demonstrativos baseados no ID {{ product.id }}.
+</div>
+{% endblock %}

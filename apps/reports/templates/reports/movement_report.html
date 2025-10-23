@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatório de Movimentações - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Relatório de Movimentações</h3>
+    <div>
+        <a href="{% url 'reports:export_movements_csv' %}" class="btn btn-success">
+            <i class="fas fa-download me-1"></i> Exportar CSV
+        </a>
+        <a href="{% url 'reports:report_index' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form class="row g-2" method="get">
+            <div class="col-md-3">
+                <input type="date" class="form-control" name="start">
+            </div>
+            <div class="col-md-3">
+                <input type="date" class="form-control" name="end">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">Todos os tipos</option>
+                    <option value="IN">Entradas</option>
+                    <option value="OUT">Saídas</option>
+                    <option value="ADJ">Ajustes</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Quantidade</th>
+                    <th>Responsável</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>22/10/2025</td>
+                    <td>Produto A</td>
+                    <td><span class="badge bg-success">Entrada</span></td>
+                    <td class="text-end">+50</td>
+                    <td>{{ request.user.username }}</td>
+                </tr>
+                <tr>
+                    <td>21/10/2025</td>
+                    <td>Produto B</td>
+                    <td><span class="badge bg-danger">Saída</span></td>
+                    <td class="text-end">-15</td>
+                    <td>{{ request.user.username }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
