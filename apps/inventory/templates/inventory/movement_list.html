@@ -21,9 +21,9 @@
             <div class="col-md-2">
                 <select name="type" class="form-select">
                     <option value="">Tipo (todos)</option>
-                    <option value="IN" {% if request.GET.type=='IN' %}selected{% endif %}>Entrada</option>
-                    <option value="OUT" {% if request.GET.type=='OUT' %}selected{% endif %}>Saída</option>
-                    <option value="ADJ" {% if request.GET.type=='ADJ' %}selected{% endif %}>Ajuste</option>
+                    <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Entrada</option>
+                    <option value="OUT" {% if request.GET.type == 'OUT' %}selected{% endif %}>Saída</option>
+                    <option value="ADJ" {% if request.GET.type == 'ADJ' %}selected{% endif %}>Ajuste</option>
                 </select>
             </div>
             <div class="col-md-2">
