@@ -34,6 +34,9 @@
                         <a href="{% url 'suppliers:supplier_update' supplier.id %}" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-edit"></i>
                         </a>
+                        <a href="{% url 'suppliers:supplier_delete' supplier.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}

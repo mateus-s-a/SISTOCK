@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Fornecedor - SISTOCK{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Fornecedor</h3>
+    <div>
+        <a href="{% url 'suppliers:supplier_detail' request.resolver_match.kwargs.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nome da Empresa</label>
+                    <input type="text" class="form-control" name="name" value="Fornecedor {{ request.resolver_match.kwargs.pk }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Pessoa de Contato</label>
+                    <input type="text" class="form-control" name="contact_person" value="João Silva">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" value="contato@fornecedor{{ request.resolver_match.kwargs.pk }}.com" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Telefone</label>
+                    <input type="text" class="form-control" name="phone" value="(11) 99999-999{{ request.resolver_match.kwargs.pk }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">CNPJ</label>
+                    <input type="text" class="form-control" name="cnpj" value="12.345.678/000{{ request.resolver_match.kwargs.pk }}-90">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Endereço</label>
+                    <textarea class="form-control" name="address" rows="3">Rua das Flores, 123 - Centro - São Paulo/SP</textarea>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                </button>
+                <a href="{% url 'suppliers:supplier_detail' request.resolver_match.kwargs.pk %}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3">
+    <i class="fas fa-info-circle me-1"></i> 
+    <strong>Demonstração:</strong> Dados pré-preenchidos para fornecedor ID {{ request.resolver_match.kwargs.pk }}.
+</div>
+{% endblock %}

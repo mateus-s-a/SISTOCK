@@ -38,7 +38,15 @@ class SupplierUpdateView(LoginRequiredMixin, TemplateView):
     """Edição Fornecedor"""
     template_name = 'suppliers/supplier_update.html'
 
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Fornecedor atualizado com sucesso. (Simulação)')
+        return redirect('suppliers:supplier_list')
+
 
 class SupplierDeleteView(LoginRequiredMixin, TemplateView):
     """Exclusão Fornecedor"""
     template_name = 'suppliers/supplier_delete.html'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Fornecedor excluído com sucesso. (Simulação)')
+        return redirect('suppliers:supplier_list')

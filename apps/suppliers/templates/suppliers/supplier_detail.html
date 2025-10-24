@@ -12,6 +12,9 @@
         <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Voltar
         </a>
+        <a href="{% url 'suppliers:supplier_delete' request.resolver_match.kwargs.pk %}" class="btn btn-outline-danger">
+            <i class="fas fa-trash me-1"></i> Excluir
+        </a>
     </div>
 </div>
 

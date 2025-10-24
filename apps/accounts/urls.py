@@ -10,7 +10,9 @@ urlpatterns = [
         redirect_authenticated_user=True
     ), name='login'),
 
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(
+        next_page='accounts:login'
+    ), name='logout'),
 
     path('profile/', views.ProfileView.as_view(), name='profile'),
 
