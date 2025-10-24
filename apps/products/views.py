@@ -2,23 +2,24 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from .models import Product, Category
 
 # Create your views here.
 
 class ProductListView(LoginRequiredMixin, TemplateView):
     """Lista Produtos"""
+    model = Product
     template_name = 'products/product_list.html'
+    context_object_name = 'products'
+    paginate_by = 10
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # TESTE-ESTÁTICO-PRODUCTS => (Lista Produtos)
-        context['products'] = [
-            {'id': 1, 'name': 'Produto A', 'sku': 'PRD001', 'stock': 50, 'price': 25.99},
-            {'id': 2, 'name': 'Produto B', 'sku': 'PRD002', 'stock': 30, 'price': 45.50},
-            {'id': 3, 'name': 'Produto C', 'sku': 'PRD003', 'stock': 8, 'price': 15.75},
-        ]
-        return context
+    def get_queryset(self):
+        qs = Product.objects.select_related('category').all().order_by('name')
+        q = self.request.GET.get('q', '')
+        if q:
+            qs = qs.filter(name__icontains=q) | qs.filter(sku__icontains=q)
+        return qs
+    
 
 
 class ProductCreateView(LoginRequiredMixin, TemplateView):
