@@ -1,0 +1,26 @@
+[
+    {
+        "model": "suppliers.supplier",
+        "pk": 1,
+        "fields": {
+            "name": "Fornecedor Tech S.A.",
+            "contact_person": "Carlos Silva",
+            "email": "contato@fornecedortech.com",
+            "phone": "(11) 98765-4321",
+            "address": "Rua da Tecnologia, 123, São Paulo, SP",
+            "cnpj": "12.345.678/0001-99"
+        }
+    },
+    {
+        "model": "suppliers.supplier",
+        "pk": 2,
+        "fields": {
+            "name": "Distribuidora de Papelaria Central",
+            "contact_person": "Ana Pereira",
+            "email": "vendas@papelariacentral.com",
+            "phone": "(21) 12345-6789",
+            "address": "Avenida das Canetas, 456, Rio de Janeiro, RJ",
+            "cnpj": "98.765.432/0001-11"
+        }
+    }
+]
