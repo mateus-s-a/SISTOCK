@@ -28,7 +28,12 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-wda!d0meelv)2v7_rqx+!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+
+# Remove esta linha do base.py e defina ALLOWED_HOSTS em cada ambiente específico (development.py, production.py)
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+
 
 # Application definition
 

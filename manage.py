@@ -6,7 +6,19 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sistock.settings')
+    
+    # Define o módulo de settings baseado na variável ENV
+    env = os.environ.get('ENV', 'development').lower()
+
+    if env == 'production':
+        settings_module = 'sistock.settings.production'
+    elif env == 'development':
+        settings_module = 'sistock.settings.development'
+    else:
+        settings_module = 'sistock.settings.development'  # Fallback para development
+    
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
