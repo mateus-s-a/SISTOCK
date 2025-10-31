@@ -1,80 +1,111 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, ListView
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
+
 from .models import Product, Category
+from .forms import ProductForm, CategoryForm
+from .filters import ProductFilter
+
 
 # Create your views here.
 
-class ProductListView(LoginRequiredMixin, TemplateView):
+# --- Views de Produto --- #
+class ProductListView(LoginRequiredMixin, ListView):
     """Lista Produtos"""
     model = Product
     template_name = 'products/product_list.html'
     context_object_name = 'products'
-    paginate_by = 10
+    paginate_by = 15
 
     def get_queryset(self):
-        qs = Product.objects.select_related('category').all().order_by('name')
-        q = self.request.GET.get('q', '')
-        if q:
-            qs = qs.filter(name__icontains=q) | qs.filter(sku__icontains=q)
-        return qs
-    
-
-
-class ProductCreateView(LoginRequiredMixin, TemplateView):
-    """Cria Produto"""
-    template_name = 'products/product_create.html'
-
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Produto criado com sucesso. (Simulação)')
-        return redirect('products:product_list')
-
-
-class ProductDetailView(LoginRequiredMixin, TemplateView):
-    """Detalhe Produto"""
-    template_name = 'products/product_detail.html'
+        """Adiciona busca simples ao queryset"""
+        queryset = super().get_queryset().select_related('category').order_by('name')
+        self.filter = ProductFilter(self.request.GET, queryset=queryset)
+        return self.filter.qs
 
     def get_context_data(self, **kwargs):
+        """
+        Adiciona o objeto de filtro ao contexto para ser usado no template
+        """
         context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
+    
 
-        # TESTE-ESTÁTICO-PRODUCTS => (Detalhe Produtos)
-        product_id = kwargs.get('pk', 1)
-        context['product'] = {
-            'id': product_id,
-            'name': f'Produto {product_id}',
-            'sku': f'PRD00{product_id}',
-            'stock': 50,
-            'price': 25.99,
-            'description': 'Descrição do produto...'
-        }
+class ProductDetailView(LoginRequiredMixin, DetailView):
+    """Detalhe Produto"""
+    model = Product
+    template_name = 'products/product_detail.html'
+    context_object_name = 'product'
 
+
+
+class ProductCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    """Cria Produto"""
+    model = Product
+    form_class = ProductForm
+    template_name = 'products/product_form.html'    # Template reutilizável
+    success_url = reverse_lazy('products:product_list')
+    success_message = 'Produto criado com sucesso.'
+    # template_name = 'products/product_create.html'
+
+    def get_context_data(self, **kwargs):
+        """Adiciona título ao contexto"""
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Criar Produto'
         return context
 
 
-class ProductUpdateView(LoginRequiredMixin, TemplateView):
+
+class ProductUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """Edição Produto"""
-    template_name = 'products/product_update.html'
+    model = Product
+    form_class = ProductForm
+    template_name = 'products/product_form.html'    # Template reutilizável
+    success_url = reverse_lazy('products:product_list')
+    success_message = 'Produto atualizado com sucesso.'
+    # template_name = 'products/product_update.html'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Produto atualizado com sucesso. (Simulação)')
-        return redirect('products:product_list')
+    def get_context_data(self, **kwargs):
+        """Adiciona título ao contexto"""
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Editar Produto'
+        return context
+    
 
 
-class ProductDeleteView(LoginRequiredMixin, TemplateView):
+class ProductDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     """Exclusão Produto"""
-    template_name = 'products/product_delete.html'
+    model = Product
+    template_name = 'products/product_confirm_delete.html'
+    success_url = reverse_lazy('products:product_list')
+    success_message = 'Produto excluído com sucesso.'
+    # template_name = 'products/product_delete.html'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Produto excluído com sucesso. (Simulação)')
-        return redirect('products:product_list')
 
 
-class CategoryListView(LoginRequiredMixin, TemplateView):
+# --- Views de Categoria --- #
+
+class CategoryListView(LoginRequiredMixin, ListView):
     """Lista Categorias"""
+    model = Category
     template_name = 'products/category_list.html'
+    context_object_name = 'categories'
+    paginate_by = 15
 
 
-class CategoryCreateView(LoginRequiredMixin, TemplateView):
+class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Criação Categoria"""
-    template_name = 'products/category_create.html'
+    model = Category
+    form_class = CategoryForm
+    template_name = 'products/category_form.html'    # Template reutilizável
+    success_url = reverse_lazy('products:category_list')
+    success_message = 'Categoria criada com sucesso.'
+    # template_name = 'products/category_create.html'
