@@ -1,52 +1,85 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
+
+from .models import Supplier
+from .forms import SupplierForm
+
 
 # Create your views here.
 
-class SupplierListView(LoginRequiredMixin, TemplateView):
+# --- Views de Fornecedores --- #
+class SupplierListView(LoginRequiredMixin, ListView):
     """Lista Fornecedores"""
+    model = Supplier
     template_name = 'suppliers/supplier_list.html'
+    context_object_name = 'suppliers'
+    paginate_by = 15
+
+    def get_queryset(self):
+        """ Adiciona busca simples por nome, email ou CNPJ """
+        queryset = super().get_queryset().order_by('name')
+        query = self.request.GET.get('q')
+        if query:
+            return queryset.filter(name__icontains=query) | \
+                   queryset.filter(email__icontains=query) | \
+                   queryset.filter(cnpj__icontains=query)
+        return queryset
+
+
+
+class SupplierDetailView(LoginRequiredMixin, DetailView):
+    """Detalhe Fornecedor"""
+    model = Supplier
+    template_name = 'suppliers/supplier_detail.html'
+    context_object_name = 'supplier'
+
+
+
+class SupplierCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    """Criação Fornecedor"""
+    model = Supplier
+    form_class = SupplierForm
+    template_name = 'suppliers/supplier_form.html'  # Template reutilizável
+    success_url = reverse_lazy('suppliers:supplier_list')
+    success_message = 'Fornecedor criado com sucesso.'
+    # template_name = 'suppliers/supplier_create.html'
 
     def get_context_data(self, **kwargs):
+        """ Adiciona um título dinâmico para o template do formulário. """
         context = super().get_context_data(**kwargs)
-
-        # TESTE-ESTÁTICO-SUPPLIER => (Lista Fornecedores)
-        context['suppliers'] = [
-            {'id': 1, 'name': 'Fornecedor A', 'email': 'contato@fornecedora.com', 'phone': '(11) 99999-9999'},
-            {'id': 2, 'name': 'Fornecedor B', 'email': 'vendas@fornecedorb.com', 'phone': '(11) 88888-8888'},
-        ]
+        context['form_title'] = 'Criar Fornecedor'
         return context
 
 
-class SupplierCreateView(LoginRequiredMixin, TemplateView):
-    """Criação Fornecedor"""
-    template_name = 'suppliers/supplier_create.html'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Fornecedor criado com sucesso. (Simulação)')
-        return redirect('suppliers:supplier_list')
-
-
-class SupplierDetailView(LoginRequiredMixin, TemplateView):
-    """Detalhe Fornecedor"""
-    template_name = 'suppliers/supplier_detail.html'
-
-
-class SupplierUpdateView(LoginRequiredMixin, TemplateView):
+class SupplierUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """Edição Fornecedor"""
-    template_name = 'suppliers/supplier_update.html'
+    model = Supplier
+    form_class = SupplierForm
+    template_name = 'suppliers/supplier_form.html'  # Template reutilizável
+    success_url = reverse_lazy('suppliers:supplier_list')
+    success_message = 'Fornecedor atualizado com sucesso.'
+    # template_name = 'suppliers/supplier_update.html'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Fornecedor atualizado com sucesso. (Simulação)')
-        return redirect('suppliers:supplier_list')
+    def get_context_data(self, **kwargs):
+        """ Adiciona um título dinâmico para o template do formulário. """
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = 'Editar Fornecedor'
+        return context
 
 
-class SupplierDeleteView(LoginRequiredMixin, TemplateView):
+class SupplierDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     """Exclusão Fornecedor"""
-    template_name = 'suppliers/supplier_delete.html'
-
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Fornecedor excluído com sucesso. (Simulação)')
-        return redirect('suppliers:supplier_list')
+    model = Supplier
+    template_name = 'suppliers/supplier_confirm_delete.html'
+    success_url = reverse_lazy('suppliers:supplier_list')
+    success_message = 'Fornecedor excluído com sucesso.'
+    # template_name = 'suppliers/supplier_delete.html'
