@@ -79,16 +79,22 @@
                                 <th>Ação</th>
                                 <th>Produto</th>
                                 <th>Quantidade</th>
+                                <th>Usuário</th>
                                 <th>Data</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for activity in recent_activities %}
                             <tr>
-                                <td>{{ activity.action }}</td>
-                                <td>{{ activity.product }}</td>
+                                <td>{{ activity.get_movement_type_display }}</td>
+                                <td>{{ activity.product.name }}</td>
                                 <td>{{ activity.quantity }}</td>
-                                <td>{{ activity.date }}</td>
+                                <td>{{ activity.user.username }}</td>
+                                <td>{{ activity.created_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhuma atividade recente encontrada.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

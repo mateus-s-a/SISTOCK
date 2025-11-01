@@ -22,6 +22,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Consultas dinâmicas para as métricas
         total_products = Product.objects.count()
         total_suppliers = Supplier.objects.count()
+        total_movements = StockMovement.objects.count()
 
         # Conta produtos com estoque baixo ou zerado
         low_stock_count = Product.objects.filter(stock_quantity__lte=F('minimum_stock')).count()
@@ -33,6 +34,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'total_products': total_products,
             'total_suppliers': total_suppliers,
             'low_stock_count': low_stock_count,
+            'total_movements': total_movements,
             'recent_activities': recent_activities,
         })
         return context
