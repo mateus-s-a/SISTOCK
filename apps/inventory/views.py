@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db.models import F
+
+from apps.products.models import Product
+from apps.suppliers.models import Supplier
+from .models import StockMovement
+
+
 
 # Create your views here.
-
+# --- Views do Inventory ---
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Dashboard"""
     template_name = 'inventory/dashboard.html'
@@ -12,19 +19,25 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # TESTE-ESTÁTICO-INVENTORY => Dados fictícios (Dashboard)
+        # Consultas dinâmicas para as métricas
+        total_products = Product.objects.count()
+        total_suppliers = Supplier.objects.count()
+
+        # Conta produtos com estoque baixo ou zerado
+        low_stock_count = Product.objects.filter(stock_quantity__lte=F('minimum_stock')).count()
+
+        # Busca as 10 movimentações mais recentes
+        recent_activities = StockMovement.objects.select_related('product', 'user').order_by('-created_at')[:10]
+
         context.update({
-            'total_products': 125,
-            'low_stock_count': 8,
-            'total_movements': 350,
-            'recent_activities': [
-                {'action': 'Entrada', 'product': 'Produto A', 'quantity': 50, 'date': '22/10/2025'},
-                {'action': 'Saída', 'product': 'Produto B', 'quantity': 15, 'date': '21/10/2025'},
-                {'action': 'Ajuste', 'product': 'Produto C', 'quantity': -2, 'date': '20/10/2025'},
-            ]
+            'total_products': total_products,
+            'total_suppliers': total_suppliers,
+            'low_stock_count': low_stock_count,
+            'recent_activities': recent_activities,
         })
         return context
-    
+
+
 
 class MovementListView(LoginRequiredMixin, TemplateView):
     """Lista Movimentação"""
