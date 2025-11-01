@@ -1,12 +1,16 @@
+from django.db import transaction
+from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.db.models import F
 
 from apps.products.models import Product
 from apps.suppliers.models import Supplier
 from .models import StockMovement
+from .forms import StockMovementForm
 
 
 
@@ -56,13 +60,43 @@ class MovementListView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class MovementCreateView(LoginRequiredMixin, TemplateView):
+class MovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Criação Movimentação"""
+    model = StockMovement
+    form_class = StockMovementForm
     template_name = 'inventory/movement_create.html'
+    success_url = reverse_lazy('inventory:movement_list')
+    # success_url = reverse_lazy('inventory:dashboard')
+    success_message = "Movimentação de estoque registrada com sucesso."
 
-    def post(self, request, *args, **kwargs):
-        messages.success(request, 'Movimentação registrada com sucesso. (Simulação)')
-        return redirect('inventory:movement_list')
+    def form_valid(self, form):
+        """
+        Sobrescreve o método para associar o usuário e atualizar o estoque
+        do produto de forma atômica
+        """
+
+        # Associa o usuário logado à movimentação
+        form.instance.user = self.request.user
+
+        # Usa uma transação para garantir a consistência dos dados
+        with transaction.atomic():
+            response = super().form_valid(form)
+
+            movement = self.object
+            product = movement.product
+
+            if movement.movement_type == StockMovement.IN:
+                product.stock_quantity = F('stock_quantity') + movement.quantity
+            elif movement.movement_type == StockMovement.OUT:
+                product.stock_quantity = F('stock_quantity') - movement.quantity
+            elif movement.movement_type == StockMovement.ADJ:
+                product.stock_quantity = F('stock_quantity') + movement.quantity  # Ajuste pode ser positivo ou negativo
+            
+            product.save()
+        
+        return response
+
+    
 
 
 class MovementDetailView(LoginRequiredMixin, TemplateView):
