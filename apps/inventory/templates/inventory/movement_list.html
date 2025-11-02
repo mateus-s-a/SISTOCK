@@ -1,84 +1,76 @@
 {% extends 'base.html' %}
+
 {% block title %}Movimentações - SISTOCK{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Movimentações</h3>
-    <div>
-        <a href="{% url 'inventory:movement_create' %}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Nova Movimentação
-        </a>
-    </div>
+    <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Movimentações de Estoque</h3>
+    <a href="{% url 'inventory:movement_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Nova Movimentação
+    </a>
 </div>
 
+<!-- Formulário de Filtros -->
 <div class="card mb-3">
     <div class="card-body">
         <form class="row g-2" method="get">
-            <div class="col-md-3">
-                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control"
-                    placeholder="Buscar por produto ou SKU">
+            <div class="col-md-6">
+                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Buscar por produto ou SKU...">
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <select name="type" class="form-select">
-                    <option value="">Tipo (todos)</option>
+                    <option value="">Todos os Tipos</option>
                     <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Entrada</option>
                     <option value="OUT" {% if request.GET.type == 'OUT' %}selected{% endif %}>Saída</option>
                     <option value="ADJ" {% if request.GET.type == 'ADJ' %}selected{% endif %}>Ajuste</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <input type="date" name="start" value="{{ request.GET.start }}" class="form-control"
-                    placeholder="Início">
-            </div>
-            <div class="col-md-2">
-                <input type="date" name="end" value="{{ request.GET.end }}" class="form-control" placeholder="Fim">
-            </div>
-            <div class="col-md-3 text-end">
-                <button class="btn btn-outline-secondary me-2">
-                    <i class="fas fa-filter me-1"></i> Filtrar
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 me-2">
+                    <i class="fas fa-filter"></i> Filtrar
                 </button>
-                <a href="?" class="btn btn-outline-dark">
-                    <i class="fas fa-rotate me-1"></i> Limpar
+                <a href="{% url 'inventory:movement_list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-times"></i> Limpar
                 </a>
             </div>
         </form>
     </div>
 </div>
 
+<!-- Tabela de Movimentações -->
 <div class="card">
     <div class="card-body table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
                     <th>Data</th>
                     <th>Produto</th>
                     <th>Tipo</th>
-                    <th class="text-end">Quantidade</th>
+                    <th>Quantidade</th>
+                    <th>Usuário</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
-                {% for m in movements %}
+                {% for movement in movements %}
                 <tr>
-                    <td>{{ m.id }}</td>
-                    <td>{{ m.date }}</td>
-                    <td>{{ m.product }}</td>
+                    <td>{{ movement.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ movement.product.name }} ({{ movement.product.sku }})</td>
                     <td>
-                        {% if m.type == 'Entrada' %}
+                        {% if movement.movement_type == 'IN' %}
                         <span class="badge bg-success">Entrada</span>
-                        {% elif m.type == 'Saída' %}
+                        {% elif movement.movement_type == 'OUT' %}
                         <span class="badge bg-danger">Saída</span>
                         {% else %}
                         <span class="badge bg-warning text-dark">Ajuste</span>
                         {% endif %}
                     </td>
-                    <td class="text-end">
-                        {% if m.type == 'Saída' %}-{% endif %}{{ m.quantity }}
-                    </td>
+                    <td>{{ movement.quantity }}</td>
+                    <td>{{ movement.user.username }}</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:movement_detail' m.id %}">
-                            <i class="fas fa-eye me-1"></i> Ver
+                        <a href="{% url 'inventory:movement_detail' movement.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Detalhes
                         </a>
                     </td>
                 </tr>
@@ -92,9 +84,37 @@
     </div>
 </div>
 
+<!-- Paginação -->
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">&laquo; Primeira</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Anterior</a>
+            </li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Próxima</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Última &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+
+<!--
 <div class="alert alert-info mt-3">
     <i class="fas fa-info-circle me-1"></i> Esta página está em modo de demonstração com dados simulados. Integração com
     banco virá na próxima fase.
 </div>
+-->
 
 {% endblock %}

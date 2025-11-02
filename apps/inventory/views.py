@@ -1,11 +1,11 @@
 from django.db import transaction
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.db.models import F
+from django.db.models import F, Q
 
 from apps.products.models import Product
 from apps.suppliers.models import Supplier
@@ -45,19 +45,33 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
 
-class MovementListView(LoginRequiredMixin, TemplateView):
+class MovementListView(LoginRequiredMixin, ListView):
     """Lista Movimentação"""
+    model = StockMovement
     template_name = 'inventory/movement_list.html'
+    context_object_name = 'movements'
+    paginate_by = 20
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_queryset(self):
+        """
+        Sobrescreve o queryset para aplicar filtros de busca e tipo
+        """
+        queryset = super().get_queryset().select_related('product', 'user').order_by('-created_at')
+        
+        # Filtro por produto (nome ou SKU)
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(product__name__icontains=query) | Q(product__sku__icontains=query)
+            )
+        
+        # Filtro por tipo de movimentação
+        movement_type = self.request.GET.get('type')
+        if movement_type in dict(StockMovement.MOVEMENT_TYPES):
+            queryset = queryset.filter(movement_type=movement_type)
+        
+        return queryset
 
-        # TESTE-ESTÁTICO-INVENTORY => Dados fictícios (Lista Movimentação)
-        context['movements'] = [
-            {'id': 1, 'product': 'Produto A', 'type': 'Entrada', 'quantity': 50, 'date': '22/10/2025'},
-            {'id': 2, 'product': 'Produto B', 'type': 'Saída', 'quantity': 15, 'date': '21/10/2025'},
-        ]
-        return context
 
 
 class MovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -96,12 +110,20 @@ class MovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         
         return response
 
-    
 
 
-class MovementDetailView(LoginRequiredMixin, TemplateView):
+class MovementDetailView(LoginRequiredMixin, DetailView):
     """Detalhe Movimentação"""
+    model = StockMovement
     template_name = 'inventory/movement_detail.html'
+    context_object_name = 'movement'
+
+    def get_queryset(self):
+        """
+        Otimiza a consulta para incluir dados do produto e do usuário
+        """
+        return super().get_queryset().select_related('product', 'user')
+
 
 
 class StockAlertsView(LoginRequiredMixin, TemplateView):
