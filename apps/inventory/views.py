@@ -11,6 +11,7 @@ from apps.products.models import Product
 from apps.suppliers.models import Supplier
 from .models import StockMovement
 from .forms import StockMovementForm
+from .filters import StockMovementFilter
 
 
 
@@ -54,25 +55,18 @@ class MovementListView(LoginRequiredMixin, ListView):
     context_object_name = 'movements'
     paginate_by = 20
 
+    # Filtro
     def get_queryset(self):
-        """
-        Sobrescreve o queryset para aplicar filtros de busca e tipo
-        """
+        """ Sobrescreve o queryset para aplicar filtros de busca e tipo """
         queryset = super().get_queryset().select_related('product', 'user').order_by('-created_at')
-        
-        # Filtro por produto (nome ou SKU)
-        query = self.request.GET.get('q')
-        if query:
-            queryset = queryset.filter(
-                Q(product__name__icontains=query) | Q(product__sku__icontains=query)
-            )
-        
-        # Filtro por tipo de movimentação
-        movement_type = self.request.GET.get('type')
-        if movement_type in dict(StockMovement.MOVEMENT_TYPES):
-            queryset = queryset.filter(movement_type=movement_type)
-        
-        return queryset
+        self.filter = StockMovementFilter(self.request.GET, queryset=queryset)
+        return self.filter.qs
+    
+    def get_context_data(self, **kwargs):
+        """ Adiciona o objeto de filtro ao contexto """
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
 
 
 

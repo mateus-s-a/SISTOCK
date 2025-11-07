@@ -11,6 +11,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 
 from .models import Supplier
 from .forms import SupplierForm
+from .filters import SupplierFilter
 
 
 # Create your views here.
@@ -26,12 +27,14 @@ class SupplierListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """ Adiciona busca simples por nome, email ou CNPJ """
         queryset = super().get_queryset().order_by('name')
-        query = self.request.GET.get('q')
-        if query:
-            return queryset.filter(name__icontains=query) | \
-                   queryset.filter(email__icontains=query) | \
-                   queryset.filter(cnpj__icontains=query)
-        return queryset
+        self.filter = SupplierFilter(self.request.GET, queryset=queryset)
+        return self.filter.qs
+    
+    def get_context_data(self, **kwargs):
+        """ Adiciona o objeto de filtro ao contexto """
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
 
 
 

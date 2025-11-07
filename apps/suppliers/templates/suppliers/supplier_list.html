@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}Lista de Fornecedores{% endblock %}
 
@@ -12,15 +13,51 @@
         </a>
     </div>
 
-    <!-- Barra de Busca -->
-    <form method="get" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="q" class="form-control" placeholder="Buscar por nome, email ou CNPJ..." value="{{ request.GET.q }}">
-            <button class="btn btn-outline-secondary" type="submit">
-                <i class="fas fa-search"></i>
-            </button>
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtros de Busca</h5>
         </div>
-    </form>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!--
+                <div class="col-md-4">
+                    {{ filter.form.name|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter.form.email|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter.form.cnpj|as_crispy_field }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div> 
+                -->
+
+                <div class="col-md-3">
+                    {{ filter.form.name|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter.form.email|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter.form.cnpj|as_crispy_field }}
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                    <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-outline-danger w-100">
+                        <i class="fas fa-redo"></i> Limpar
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -62,13 +99,13 @@
     <nav class="mt-4">
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page=1&q={{ request.GET.q|urlencode }}">Primeira</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q|urlencode }}">Anterior</a></li>
+                <li class="page-item"><a class="page-link" href="?page=1&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">&laquo; Primeira</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Anterior</a></li>
             {% endif %}
             <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
             {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q|urlencode }}">Próxima</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q|urlencode }}">Última</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Próxima</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Última &raquo;</a></li>
             {% endif %}
         </ul>
     </nav>
