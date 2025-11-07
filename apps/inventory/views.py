@@ -29,7 +29,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         total_movements = StockMovement.objects.count()
 
         # Conta produtos com estoque baixo ou zerado
-        low_stock_count = Product.objects.filter(stock_quantity__lte=F('minimum_stock')).count()
+        low_stock_products = Product.objects.low_stock().select_related('category')
+        low_stock_count = low_stock_products.count()
 
         # Busca as 10 movimentações mais recentes
         recent_activities = StockMovement.objects.select_related('product', 'user').order_by('-created_at')[:10]
@@ -38,6 +39,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'total_products': total_products,
             'total_suppliers': total_suppliers,
             'low_stock_count': low_stock_count,
+            'low_stock_products': low_stock_products[:5],   # <- 5 produtos abaixo do estoque
             'total_movements': total_movements,
             'recent_activities': recent_activities,
         })
@@ -126,16 +128,13 @@ class MovementDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class StockAlertsView(LoginRequiredMixin, TemplateView):
+class StockAlertsView(LoginRequiredMixin, ListView):
     """Alerta Estoque Baixo"""
+    model = Product
     template_name = 'inventory/stock_alerts.html'
+    context_object_name = 'low_stock_products'
+    paginate_by = 20
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # TESTE-ESTÁTICO-INVENTORY => Dados fictícios (Alerta Estoque Baixo)
-        context['low_stock_products'] = [
-            {'name': 'Produto X', 'current_stock': 5, 'minimum_stock': 10},
-            {'name': 'Produto Y', 'current_stock': 2, 'minimum_stock': 15},
-        ]
-        return context
+    def get_queryset(self):
+        # Retorna produtos com estoque baixo para Dashboard
+        return Product.objects.low_stock().select_related('category').order_by('stock_quantity')

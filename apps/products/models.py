@@ -14,6 +14,14 @@ class Category(models.Model):
         return self.name
 
 
+class ProductManager(models.Manager):
+    def low_stock(self):
+        return self.filter(stock_quantity__lte=models.F('minimum_stock'))
+    
+    def out_of_stock(self):
+        return self.filter(stock_quantity=0)
+
+
 class Product(models.Model):
     name = models.CharField(max_length=200)
     sku = models.CharField(max_length=50, unique=True)
@@ -24,6 +32,8 @@ class Product(models.Model):
     minimum_stock = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ProductManager()
+    
     class Meta:
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
@@ -31,4 +41,19 @@ class Product(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.sku})"
+    
+    @property
+    def is_low_stock(self):
+        # Propriedade retorna True se produto estiver com estoque baixo
+        return self.stock_quantity <= self.minimum_stock
+    
+    @property
+    def stock_status(self):
+        # Retorna o status do estoque do produto
+        if self.stock_quantity == 0:
+            return 'out_of_stock'   # <- sem estoque
+        elif self.stock_quantity <= self.minimum_stock:
+            return 'low_stock'      # <- estoque baixo
+        else:
+            return 'normal'         # <- com estoque normalizado
     
