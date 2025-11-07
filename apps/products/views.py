@@ -21,6 +21,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     """Lista Produtos"""
     model = Product
     template_name = 'products/product_list.html'
+    success_url = reverse_lazy('products:product_list')
     context_object_name = 'products'
     paginate_by = 15
 
