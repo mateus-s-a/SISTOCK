@@ -34,7 +34,7 @@ class ProductForm(forms.ModelForm):
         sku = self.cleaned_data.get('sku')
         query = Product.objects.filter(sku__iexact=sku)
 
-        if self.isinstance and self.instance.pk:
+        if self.instance and self.instance.pk:
             query = query.exclude(pk=self.instance.pk)
         
         if query.exists():

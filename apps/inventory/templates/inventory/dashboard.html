@@ -64,8 +64,62 @@
     </div>
 </div>
 
+
+<!-- Lista de Produtos com Estoque Baixo -->
+{% if low_stock_products %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Alertas de Estoque Baixo</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th class="text-center">Estoque Atual</th>
+                                <th class="text-center">Estoque Mínimo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                            <tr>
+                                <td>
+                                    <strong>{{ product.name }}</strong><br>
+                                    <small class="text-muted">SKU: {{ product.sku }}</small>
+                                </td>
+                                <td>{{ product.category.name }}</td>
+                                <td class="text-center">
+                                    <span class="badge {% if product.stock_quantity == 0 %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {{ product.stock_quantity }}
+                                    </span>
+                                </td>
+                                <td class="text-center">{{ product.minimum_stock }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if low_stock_count > 5 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'inventory:stock_alerts' %}" class="btn btn-warning">
+                        Ver todos os {{ low_stock_count }} produtos com estoque baixo
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
 <!-- Atividades Recentes -->
-<div class="row">
+<div class="row mt-4">
     <div class="col-lg-8">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
