@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-{% block title %}Movimentações - SISTOCK{% endblock %}
+{% block title %}Movimentações de Estoque - SISTOCK{% endblock %}
 
 {% block content %}
 
@@ -13,25 +14,26 @@
 
 <!-- Formulário de Filtros -->
 <div class="card mb-3">
+    <div class="card-header">
+        <h5 class="mb-0">Filtros de Busca</h5>
+    </div>
     <div class="card-body">
-        <form class="row g-2" method="get">
-            <div class="col-md-6">
-                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Buscar por produto ou SKU...">
+        <form class="row g-3" method="get">
+            <div class="col-md-4">
+                {{ filter.form.product|as_crispy_field }}
             </div>
             <div class="col-md-3">
-                <select name="type" class="form-select">
-                    <option value="">Todos os Tipos</option>
-                    <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Entrada</option>
-                    <option value="OUT" {% if request.GET.type == 'OUT' %}selected{% endif %}>Saída</option>
-                    <option value="ADJ" {% if request.GET.type == 'ADJ' %}selected{% endif %}>Ajuste</option>
-                </select>
+                {{ filter.form.movement_type|as_crispy_field }}
             </div>
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-3">
+                {{ filter.form.user__username|as_crispy_field }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100 me-2">
                     <i class="fas fa-filter"></i> Filtrar
                 </button>
-                <a href="{% url 'inventory:movement_list' %}" class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-times"></i> Limpar
+                <a href="{% url 'inventory:movement_list' %}" class="btn-outline-danger w-100">
+                    <i class="fas fa-redo"></i> Limpar
                 </a>
             </div>
         </form>
@@ -107,14 +109,7 @@
         {% endif %}
     </ul>
 </nav>
+
 {% endif %}
-
-
-<!--
-<div class="alert alert-info mt-3">
-    <i class="fas fa-info-circle me-1"></i> Esta página está em modo de demonstração com dados simulados. Integração com
-    banco virá na próxima fase.
-</div>
--->
 
 {% endblock %}

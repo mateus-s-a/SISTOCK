@@ -22,5 +22,17 @@
             "address": "Avenida das Canetas, 456, Rio de Janeiro, RJ",
             "cnpj": "98.765.432/0001-11"
         }
+    },
+    {
+        "model": "suppliers.supplier",
+        "pk": 3,
+        "fields": {
+            "name": "Alimentos Naturais Ltda.",
+            "contact_person": "Mariana Costa",
+            "email": "alimentos@naturais.ltda.com",
+            "phone": "(31) 99876-5432",
+            "address": "Praça dos Sabores, 789, Belo Horizonte, MG",
+            "cnpj": "23.456.789/0001-22"
+        }
     }
 ]
