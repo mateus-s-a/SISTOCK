@@ -15,6 +15,59 @@
     </div>
 </div>
 
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">Todos os Status</option>
+                    <option value="ok" {% if request.GET.status == 'ok' %}selected{% endif %}>Estoque Normal</option>
+                    <option value="low" {% if request.GET.status == 'low' %}selected{% endif %}>Estoque Baixo</option>
+                    <option value="out" {% if request.GET.status == 'out' %}selected{% endif %}>Sem Estoque</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Estatísticas -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title">Total de Produtos</h6>
+                <h3 class="mb-0">{{ total_products }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">Valor Total em Estoque</h6>
+                <h3 class="mb-0">R$ {{ total_stock_value|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title">Produtos com Estoque Baixo</h6>
+                <h3 class="mb-0">{{ low_stock_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Tabela de Estoque -->
 <div class="card">
     <div class="card-body table-responsive">
         <table class="table table-striped align-middle">
@@ -22,38 +75,70 @@
                 <tr>
                     <th>Produto</th>
                     <th>SKU</th>
-                    <th class="text-end">Estoque</th>
-                    <th class="text-end">Valor Unit.</th>
+                    <th>Categoria</th>
+                    <th class="text-end">Estoque Atual</th>
+                    <th class="text-end">Estoque Mínimo</th>
+                    <th class="text-end">Preço Unit.</th>
                     <th class="text-end">Valor Total</th>
-                    <th>Status</th>
+                    <th class="text-center">Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in stock_data %}
+                {% for product in products %}
                 <tr>
-                    <td>{{ item.product }}</td>
-                    <td><code>PRD001</code></td>
-                    <td class="text-end">{{ item.stock }}</td>
-                    <td class="text-end">R$ 25,00</td>
-                    <td class="text-end">R$ {{ item.value }}</td>
-                    <td>
-                        {% if item.stock > 10 %}
-                            <span class="badge bg-success">OK</span>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td><code>{{ product.sku }}</code></td>
+                    <td>{{ product.category.name }}</td>
+                    <td class="text-end">{{ product.stock_quantity }}</td>
+                    <td class="text-end">{{ product.minimum_stock }}</td>
+                    <td class="text-end">R$ {{ product.price|floatformat:2 }}</td>
+                    <td class="text-end"><strong>R$ {{ product.total_value|floatformat:2 }}</strong></td>
+                    <td class="text-center">
+                        {% if product.stock_quantity == 0 %}
+                            <span class="badge bg-danger">Sem Estoque</span>
+                        {% elif product.stock_quantity <= product.minimum_stock %}
+                            <span class="badge bg-warning text-dark">Estoque Baixo</span>
                         {% else %}
-                            <span class="badge bg-warning text-dark">Baixo</span>
+                            <span class="badge bg-success">Normal</span>
                         {% endif %}
                     </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4">Nenhum produto encontrado com os filtros selecionados.</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot class="table-secondary">
                 <tr class="fw-bold">
-                    <td colspan="4" class="text-end">Total Geral:</td>
-                    <td class="text-end">R$ 2.615,00</td>
-                    <td>-</td>
+                    <td colspan="6" class="text-end">Valor Total desta Página:</td>
+                    <td class="text-end">
+                        R$ {% widthratio products|length 1 1 as page_count %}
+                        {{ products | sum_attr:"total_value" | floatformat:2 | default:"0.00" }}
+                    </td>
+                    <td></td>
                 </tr>
             </tfoot>
         </table>
     </div>
 </div>
+
+
+<!-- Paginação -->
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">&laquo; Primeira</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Anterior</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Próxima</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Última &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}
