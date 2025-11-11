@@ -129,4 +129,65 @@ SISTOCK/
 
 <br>
 
+## Geração de Dados de Teste com Faker
+
+O projeto utiliza a biblioteca [Faker](https://faker.readthedocs.io/) para gerar dados falsos realistas durante o desenvolvimento e testes.
+
+### Instalação
+
+O Faker já está incluído no `requirements.txt`. Ao instalar as dependências do projeto, ele será instalado automaticamente:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Uso Básico
+
+O Faker está configurado para gerar dados em **português brasileiro** (`pt_BR`):
+
+```py
+from faker import Faker
+
+fake = Faker('pt_BR')
+```
+
+### Exemplos
+
+```py
+print(fake.name()) # Nome brasileiro
+print(fake.company()) # Nome de empresa
+print(fake.cnpj()) # CNPJ válido
+print(fake.city()) # Cidade brasileira
+```
+
+### Comandos de População do Banco
+
+Após a configuração completa, você poderá usar comandos para popular o banco de dados:
+
+### Popular todas as tabelas
+
+```bash
+python manage.py create_all_data
+```
+
+### Popular apenas categorias
+
+```bash
+python manage.py create_categories
+```
+
+### Popular apenas produtos
+
+```bash
+python manage.py create_products --quantity=50
+```
+
+> **Nota:** Os comandos serão implementados nas próximas fases do desenvolvimento.
+
+### Recursos
+
+- [Documentação oficial do Faker](https://faker.readthedocs.io/)
+- [Providers do locale pt_BR](https://faker.readthedocs.io/en/master/locales/pt_BR.html)
+
+
 > (continuação...)
