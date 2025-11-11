@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Relatório de Movimentações</h3>
     <div>
-        <a href="{% url 'reports:export_movements_csv' %}" class="btn btn-success">
+        <a href="{% url 'reports:export_movements_csv' %}?{{ request.GET.urlencode }}" class="btn btn-success">
             <i class="fas fa-download me-1"></i> Exportar CSV
         </a>
         <a href="{% url 'reports:report_index' %}" class="btn btn-outline-secondary">
@@ -15,25 +15,32 @@
     </div>
 </div>
 
+<!-- Filtros -->
 <div class="card mb-3">
+    <div class="card-header">
+        <h5 class="mb-0">Filtros de Período</h5>
+    </div>
     <div class="card-body">
         <form class="row g-2" method="get">
             <div class="col-md-3">
-                <input type="date" class="form-control" name="start">
+                <label class="form-label">Data Inicial</label>
+                <input type="date" class="form-control" name="start" value="{{ start_date }}">
             </div>
             <div class="col-md-3">
-                <input type="date" class="form-control" name="end">
+                <label class="form-label">Data Final</label>
+                <input type="date" class="form-control" name="end" value="{{ end_date }}">
             </div>
             <div class="col-md-3">
+                <label class="form-label">Tipo</label>
                 <select name="type" class="form-select">
                     <option value="">Todos os tipos</option>
-                    <option value="IN">Entradas</option>
-                    <option value="OUT">Saídas</option>
-                    <option value="ADJ">Ajustes</option>
+                    <option value="IN" {% if selected_type == 'IN' %}selected{% endif %}>Entradas</option>
+                    <option value="OUT" {% if selected_type == 'OUT' %}selected{% endif %}>Saídas</option>
+                    <option value="ADJ" {% if selected_type == 'ADJ' %}selected{% endif %}>Ajustes</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <button class="btn btn-primary">
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100">
                     <i class="fas fa-filter me-1"></i> Filtrar
                 </button>
             </div>
@@ -41,35 +48,105 @@
     </div>
 </div>
 
+<!-- Estatísticas -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">Total de Movimentações</h6>
+                <h3 class="mb-0">{{ total_movements }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">Entradas</h6>
+                <h3 class="mb-0">{{ total_in }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h6 class="card-title">Saídas</h6>
+                <h3 class="mb-0">{{ total_out }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title">Ajustes</h6>
+                <h3 class="mb-0">{{ total_adj }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela de Movimentações -->
 <div class="card">
     <div class="card-body table-responsive">
         <table class="table table-striped align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th>Data</th>
+                    <th>Data/Hora</th>
                     <th>Produto</th>
+                    <th>SKU</th>
                     <th>Tipo</th>
                     <th class="text-end">Quantidade</th>
                     <th>Responsável</th>
+                    <th>Motivo</th>
                 </tr>
             </thead>
             <tbody>
+                {% for movement in movements %}
                 <tr>
-                    <td>22/10/2025</td>
-                    <td>Produto A</td>
-                    <td><span class="badge bg-success">Entrada</span></td>
-                    <td class="text-end">+50</td>
-                    <td>{{ request.user.username }}</td>
+                    <td>{{ movement.created_at|date:"d/m/Y H:i" }}</td>
+                    <td><strong>{{ movement.product.name }}</strong></td>
+                    <td><code>{{ movement.product.sku }}</code></td>
+                    <td>
+                        {% if movement.movement_type == 'IN' %}
+                            <span class="badge bg-success">Entrada</span>
+                        {% elif movement.movement_type == 'OUT' %}
+                            <span class="badge bg-danger">Saída</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Ajuste</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if movement.movement_type == 'OUT' %}-{% endif %}{{ movement.quantity }}
+                    </td>
+                    <td>{{ movement.user.username }}</td>
+                    <td>{{ movement.reason|truncatewords:8|default:"-" }}</td>
                 </tr>
+                {% empty %}
                 <tr>
-                    <td>21/10/2025</td>
-                    <td>Produto B</td>
-                    <td><span class="badge bg-danger">Saída</span></td>
-                    <td class="text-end">-15</td>
-                    <td>{{ request.user.username }}</td>
+                    <td colspan="7" class="text-center py-4">
+                        Nenhuma movimentação encontrada para os filtros selecionados.
+                    </td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Paginação -->
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">&laquo; Primeira</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Anterior</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Próxima</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode|cut:'page='|cut:'&page=' }}">Última &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

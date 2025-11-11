@@ -49,24 +49,24 @@
         <div class="row text-center">
             <div class="col-md-3">
                 <div class="border-end">
-                    <h4 class="text-primary">125</h4>
+                    <h4 class="text-primary">{{ total_products }}</h4>
                     <small class="text-muted">Total de Produtos</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="border-end">
-                    <h4 class="text-success">R$ 45.250,00</h4>
+                    <h4 class="text-success">R$ {{ total_stock_value|floatformat:2 }}</h4>
                     <small class="text-muted">Valor Total Estoque</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="border-end">
-                    <h4 class="text-warning">8</h4>
+                    <h4 class="text-warning">{{ low_stock_count }}</h4>
                     <small class="text-muted">Produtos em Alerta</small>
                 </div>
             </div>
             <div class="col-md-3">
-                <h4 class="text-info">350</h4>
+                <h4 class="text-info">{{ monthly_movements }}</h4>
                 <small class="text-muted">Movimentações (mês)</small>
             </div>
         </div>

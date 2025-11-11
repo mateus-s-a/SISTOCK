@@ -112,10 +112,7 @@
             <tfoot class="table-secondary">
                 <tr class="fw-bold">
                     <td colspan="6" class="text-end">Valor Total desta Página:</td>
-                    <td class="text-end">
-                        R$ {% widthratio products|length 1 1 as page_count %}
-                        {{ products | sum_attr:"total_value" | floatformat:2 | default:"0.00" }}
-                    </td>
+                    <td class="text-end">R$ {{ page_total_value|floatformat:2 }}</td>
                     <td></td>
                 </tr>
             </tfoot>
