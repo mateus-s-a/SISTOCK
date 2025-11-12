@@ -68,22 +68,69 @@ print(f"Estoque Mínimo: {minimum_stock}")
 
 ### Categorias
 
-#### Categorias de produtos
+#### Categorias de produtos (`create_categories`)
 
-```py
-categories = [
-    "Eletrônicos",
-    "Móveis",
-    "Alimentos",
-    "Vestuário",
-    "Livros",
-    "Brinquedos",
-    "Ferramentas",
-    "Esportes",
-    "Beleza",
-    "Informática"
-]
+Popula a tabela `Category` com categorias geradas dinamicamente usando Faker.
+
+
+**Uso básico:**
+
+```bash
+python manage.py create_categories
 ```
+
+**Opções:**
+
+- `--quantity N`: Cria N categorias (padrão: 15, máximo: 1000)
+- `--clear`: Remove todas as categorias antes de criar novas
+- `--seed N`: Define seed para reprodutibilidade
+- `--simple`: Gera apenas nomes simples sem modificadores
+
+**Exemplos:**
+
+#### Criar 15 categorias (padrão)
+
+```bash
+python manage.py create_categories
+```
+#### Criar 50 categorias aleatórias
+
+```bash
+python manage.py create_categories --quantity=50
+```
+#### Limpar e criar 100 categorias
+
+```bash
+python manage.py create_categories --quantity=100 --clear
+```
+#### Criar 20 categorias simples (sem modificadores)
+
+```bash
+python manage.py create_categories --quantity=20 --simple
+```
+#### Criar com seed para testes reproduzíveis
+
+```bash
+python manage.py create_categories --quantity=10 --seed=42 --clear
+```
+
+**Como funciona:**
+
+O comando combina elementos de duas listas:
+
+1. **Bases de categorias** (50+ opções): Eletrônicos, Móveis, Alimentos, etc.
+2. **Modificadores** (20+ opções): Premium, Profissional, Infantil, etc.
+
+Exemplos de categorias geradas:
+- Eletrônicos Premium
+- Móveis Profissional  
+- Beleza Sustentável
+- Esportes Infantil
+- Livros Digital
+- Alimentos Orgânico
+
+Cada categoria recebe uma descrição automática e realista.
+
 
 #### Descrição de categoria
 
