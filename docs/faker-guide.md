@@ -20,55 +20,89 @@ fake = Faker('pt_BR')
 Faker.seed(12345)
 ```
 
+<br>
+
+---
+
+<br>
+
 ## Exemplos de Geração de Dados
 
-### Produtos
 
-```py
-from faker import Faker
 
-fake = Faker('pt_BR')
+### Produtos (`create_products`)
+
+Popula a tabela `Product` com produtos gerados dinamicamente usando Faker.
+
+**Pré-requisito:** É necessário ter categorias criadas antes de executar este comando.
+
+**Uso básico:**
+```bash
+python manage.py create_products
 ```
 
-### Nome de produto
 
-```py
-product_name = fake.word().capitalize() + " " + fake.word().capitalize()
+**Opções:**
+
+- `--quantity N`: Cria N produtos (padrão: 50, máximo: 10000)
+- `--clear`: Remove todos os produtos antes de criar novos
+- `--seed N`: Define seed para reprodutibilidade
+- `--min-price X`: Preço mínimo (padrão: 10.00)
+- `--max-price Y`: Preço máximo (padrão: 5000.00)
+- `--low-stock-percent P`: Percentual com estoque baixo (padrão: 20%)
+
+**Exemplos:**
+
+#### Criar categorias primeiro
+
+```bash
+python manage.py create_categories --quantity=15
+```
+#### Criar 50 produtos (padrão)
+
+```bash
+python manage.py create_products
+```
+#### Criar 100 produtos
+
+```bash
+python manage.py create_products --quantity=100 --clear
+```
+#### Produtos baratos (R$ 10 a R$ 200)
+
+```bash
+python manage.py create_products --quantity=50 --min-price=10 --max-price=200 --clear
+```
+#### 50% dos produtos com estoque baixo
+
+```bash
+python manage.py create_products --quantity=30 --low-stock-percent=50 --clear
+```
+#### Dados reproduzíveis para testes
+
+```bash
+python manage.py create_products --quantity=20 --seed=42 --clear
 ```
 
-### SKU único (3 letras + 6 números)
+**Recursos:**
 
-```py
-sku = fake.lexify(text='???', letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ') + fake.numerify(text='######')
-```
+- **SKUs únicos:** Formato `ABC123456` (3 letras + 6 números)
+- **Nomes realistas:** Combinação de adjetivos, tipos e descritores
+- **Preços convincentes:** Terminam em .90, .95 ou .99 (70% dos casos)
+- **Estoque variado:** Normal (20-500) ou baixo (0-10)
+- **Vinculação automática:** Distribui produtos entre categorias existentes
 
-### Preço
 
-```py
-price = fake.pydecimal(left_digits=4, right_digits=2, positive=True, min_value=10, max_value=5000)
-```
+<br>
 
-### Quantidade em estoque
+---
 
-```py
-stock_quantity = fake.random_int(min=0, max=500)
-```
+<br>
 
-### Estoque mínimo
 
-```py
-minimum_stock = fake.random_int(min=5, max=50)
+### Categorias (`create_categories`)
 
-print(f"Produto: {product_name}")
-print(f"SKU: {sku}")
-print(f"Preço: R$ {price}")
-print(f"Estoque: {stock_quantity}")
-print(f"Estoque Mínimo: {minimum_stock}")
-```
-
-### Categorias
-
-#### Categorias de produtos (`create_categories`)
+#### Categorias de produtos
 
 Popula a tabela `Category` com categorias geradas dinamicamente usando Faker.
 
