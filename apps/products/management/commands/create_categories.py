@@ -5,8 +5,10 @@ Uso: python manage.py create_categories [opções]
 
 from django.core.management.base import BaseCommand
 from django.db import transaction, IntegrityError
+from django.db.models.deletion import ProtectedError
 from faker import Faker
-from apps.products.models import Category
+from apps.products.models import Category, Product
+
 
 
 class Command(BaseCommand):
@@ -65,6 +67,12 @@ class Command(BaseCommand):
             '--simple',
             action='store_true',
             help='Usa apenas nomes simples sem modificadores'
+        )
+
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Força remoção de produtos ao usar --clear (USE COM CUIDADO)'
         )
     
     def generate_category_name(self, fake, simple=False, used_names=None):
@@ -174,11 +182,90 @@ class Command(BaseCommand):
         # Limpar dados se solicitado
         if clear:
             self.stdout.write('🗑️  Removendo categorias existentes...')
-            deleted_count = Category.objects.all().count()
-            Category.objects.all().delete()
-            self.stdout.write(
-                self.style.WARNING(f'   Removidas {deleted_count} categorias')
-            )
+            
+            # Contar categorias e produtos antes
+            categories_count = Category.objects.count()
+            products_count = Product.objects.count()
+
+            if categories_count == 0:
+                self.stdout.write(
+                    self.style.WARNING('  Nenhuma categoria para remover')
+                )
+            else:
+                try:
+                    # Tentar deletar categorias diretamente
+                    Category.objects.all().delete()
+                    self.stdout.write(
+                        f'   ✅ Removidas {categories_count} categorias'
+                    )
+                
+                except ProtectedError as e:
+                    # Se houver produtos associados, informar o usuário
+                    protected_products = e.protected_objects
+                    products_count = len(protected_products)
+
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f'\n   ❌ Erro: Não é possível remover categorias!\n'
+                            f'   {products_count} produto(s) estão vinculados a essas categorias.\n'
+                        )
+                    )
+
+                    # Mostrar amostra dos produtos
+                    self.stdout.write('   📦 Produtos vinculados (amostra):')
+                    for i, product in enumerate(list(protected_products)[:5], 1):
+                        self.stdout.write(
+                            f'      {i}. {product.name} (SKU: {product.sku})'
+                        )
+                    
+                    if products_count > 5:
+                        self.stdout.write(f'      ... e mais {products_count - 5} produtos')
+                    
+                    # Oferecer solução
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f'\n   💡 SOLUÇÃO:\n'
+                            f'   Para limpar as categorias, você tem duas opções:\n\n'
+                            f'   1. Deletar os produtos primeiro:\n'
+                            f'      $ python manage.py shell\n'
+                            f'      >>> from apps.products.models import Product\n'
+                            f'      >>> Product.objects.all().delete()\n'
+                            f'      >>> exit()\n'
+                            f'      $ python manage.py create_categories --clear\n\n'
+                            f'   2. Usar o comando com --force (deleta produtos E categorias):\n'
+                            f'      $ python manage.py create_categories --clear --force\n\n'
+                            f'   ⚠️  ATENÇÃO: Ambas opções deletarão TODOS os produtos!\n'
+                        )
+                    )
+
+                    # Se não houver --force, abortar
+                    if not options.get('force', False):
+                        self.stdout.write(
+                            self.style.ERROR('\n   ❌ Operação cancelada.\n')
+                        )
+                        return
+
+                    # Se --force estiver presente, deletar produtos E categorias
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f'\n   ⚠️  Flag --force detectada!\n'
+                            f'   Deletando {products_count} produto(s)...'
+                        )
+                    )
+
+                    # Deletar produtos primeiro
+                    Product.objects.all().delete()
+                    self.stdout.write(
+                        self.style.SUCCESS(f'   ✅ {products_count} produtos removidos')
+                    )
+
+                    # Agora deletar categorias
+                    deleted_categories = Category.objects.all().delete()[0]
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f'   ✅ {deleted_categories} categorias removidas\n'
+                        )
+                    )
         
         # Gerar categorias
         self.stdout.write(f'\n📦 Gerando {quantity} categorias...\n')

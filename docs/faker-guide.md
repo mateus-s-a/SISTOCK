@@ -85,6 +85,7 @@ python manage.py create_categories
 - `--clear`: Remove todas as categorias antes de criar novas
 - `--seed N`: Define seed para reprodutibilidade
 - `--simple`: Gera apenas nomes simples sem modificadores
+- `--force`: Força remoção de produtos ao usar --clear (USE COM CUIDADO!)
 
 **Exemplos:**
 
@@ -93,21 +94,31 @@ python manage.py create_categories
 ```bash
 python manage.py create_categories
 ```
+
 #### Criar 50 categorias aleatórias
 
 ```bash
 python manage.py create_categories --quantity=50
 ```
+
 #### Limpar e criar 100 categorias
 
 ```bash
 python manage.py create_categories --quantity=100 --clear
 ```
+
+### Limpar TUDO (produtos + categorias) e recriar
+
+```bash
+python manage.py create_categories --quantity=20 --clear --force
+```
+
 #### Criar 20 categorias simples (sem modificadores)
 
 ```bash
 python manage.py create_categories --quantity=20 --simple
 ```
+
 #### Criar com seed para testes reproduzíveis
 
 ```bash
