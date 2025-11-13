@@ -183,6 +183,14 @@ Cada categoria recebe uma descrição automática e realista.
 description = fake.text(max_nb_chars=200)
 ```
 
+
+<br>
+
+---
+
+<br>
+
+
 ### Fornecedores
 
 ```py
