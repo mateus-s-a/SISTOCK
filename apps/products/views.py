@@ -44,6 +44,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     """Detalhe Produto"""
     model = Product
     template_name = 'products/product_detail.html'
+    success_url = reverse_lazy('products:product_detail')
     context_object_name = 'product'
 
 
