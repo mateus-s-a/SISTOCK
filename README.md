@@ -141,29 +141,6 @@ O Faker já está incluído no `requirements.txt`. Ao instalar as dependências 
 pip install -r requirements.txt
 ```
 
-### Uso Básico
-
-O Faker está configurado para gerar dados em **português brasileiro** (`pt_BR`):
-
-```py
-from faker import Faker
-
-fake = Faker('pt_BR')
-```
-
-### Exemplos
-
-```py
-print(fake.name()) # Nome brasileiro
-print(fake.company()) # Nome de empresa
-print(fake.cnpj()) # CNPJ válido
-print(fake.city()) # Cidade brasileira
-```
-
-### Comandos de População do Banco
-
-Após a configuração completa, você poderá usar comandos para popular o banco de dados:
-
 ### Popular todas as tabelas
 
 ```bash
@@ -188,6 +165,11 @@ python manage.py create_products --quantity=50
 
 - [Documentação oficial do Faker](https://faker.readthedocs.io/)
 - [Providers do locale pt_BR](https://faker.readthedocs.io/en/master/locales/pt_BR.html)
+
+### Mais Informações
+
+Para documentação completa, exemplos e opções avançadas, consulte:
+- [docs/faker-guide.md](docs/faker-guide.md)
 
 
 > (continuação...)

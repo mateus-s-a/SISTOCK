@@ -300,3 +300,79 @@ $ python manage.py create_movements --quantity=300 --seed=42 --clear
 ---
 
 <br>
+
+
+
+## Comando Master (Recomendado)
+
+### `create_all_data`
+
+🎯 **Comando recomendado para popular todo o banco de dados de uma vez!**
+
+Executa todos os comandos de população em sequência: categorias → produtos → fornecedores → movimentações.
+
+**Uso básico:**
+
+```bash
+$ python manage.py create_all_data
+```
+
+**Opções:**
+
+- `--size {small|medium|large}`: Define o tamanho do dataset (padrão: medium)
+- `--clear`: Limpa todos os dados antes de popular
+- `--seed N`: Define seed para reprodutibilidade
+- `--create-user`: Cria usuário admin padrão (username: admin, password: admin123)
+- `--skip-categories`: Pula criação de categorias
+- `--skip-products`: Pula criação de produtos
+- `--skip-suppliers`: Pula criação de fornecedores
+- `--skip-movements`: Pula criação de movimentações
+
+**Tamanhos disponíveis:**
+
+| Tamanho | Categorias | Produtos | Fornecedores | Movimentações |
+|---------|-----------|----------|--------------|---------------|
+| small   | 10        | 30       | 15           | 100           |
+| medium  | 15        | 100      | 30           | 300           |
+| large   | 25        | 500      | 50           | 1000          |
+
+**Exemplos:**
+
+#### Popular banco completo (tamanho médio)
+
+```bash
+$ python manage.py create_all_data --clear
+```
+
+#### Popular com dataset pequeno e criar usuário admin
+
+```bash
+$ python manage.py create_all_data --size=small --clear --create-user
+```
+
+#### Popular com dataset grande
+
+```bash
+$ python manage.py create_all_data --size=large --clear
+```
+
+#### Dados reproduzíveis para CI/CD
+
+```bash
+$ python manage.py create_all_data --size=small --seed=42 --clear --create-user
+```
+
+#### Popular apenas produtos e movimentações
+
+```bash
+$ python manage.py create_all_data --skip-categories --skip-suppliers
+```
+
+**Recursos:**
+
+- ✅ População completa em um único comando
+- ✅ Ordem correta de execução (respeita dependências)
+- ✅ Validação de pré-requisitos automática
+- ✅ Feedback visual com progresso
+- ✅ Estatísticas finais e tempo de execução
+- ✅ Opção de criar usuário admin automaticamente
