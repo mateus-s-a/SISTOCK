@@ -38,7 +38,7 @@ Popula a tabela `Product` com produtos gerados dinamicamente usando Faker.
 
 **Uso básico:**
 ```bash
-python manage.py create_products
+$ python manage.py create_products
 ```
 
 
@@ -56,32 +56,32 @@ python manage.py create_products
 #### Criar categorias primeiro
 
 ```bash
-python manage.py create_categories --quantity=15
+$ python manage.py create_categories --quantity=15
 ```
 #### Criar 50 produtos (padrão)
 
 ```bash
-python manage.py create_products
+$ python manage.py create_products
 ```
 #### Criar 100 produtos
 
 ```bash
-python manage.py create_products --quantity=100 --clear
+$ python manage.py create_products --quantity=100 --clear
 ```
 #### Produtos baratos (R$ 10 a R$ 200)
 
 ```bash
-python manage.py create_products --quantity=50 --min-price=10 --max-price=200 --clear
+$ python manage.py create_products --quantity=50 --min-price=10 --max-price=200 --clear
 ```
 #### 50% dos produtos com estoque baixo
 
 ```bash
-python manage.py create_products --quantity=30 --low-stock-percent=50 --clear
+$ python manage.py create_products --quantity=30 --low-stock-percent=50 --clear
 ```
 #### Dados reproduzíveis para testes
 
 ```bash
-python manage.py create_products --quantity=20 --seed=42 --clear
+$ python manage.py create_products --quantity=20 --seed=42 --clear
 ```
 
 **Recursos:**
@@ -110,7 +110,7 @@ Popula a tabela `Category` com categorias geradas dinamicamente usando Faker.
 **Uso básico:**
 
 ```bash
-python manage.py create_categories
+$ python manage.py create_categories
 ```
 
 **Opções:**
@@ -126,37 +126,37 @@ python manage.py create_categories
 #### Criar 15 categorias (padrão)
 
 ```bash
-python manage.py create_categories
+$ python manage.py create_categories
 ```
 
 #### Criar 50 categorias aleatórias
 
 ```bash
-python manage.py create_categories --quantity=50
+$ python manage.py create_categories --quantity=50
 ```
 
 #### Limpar e criar 100 categorias
 
 ```bash
-python manage.py create_categories --quantity=100 --clear
+$ python manage.py create_categories --quantity=100 --clear
 ```
 
 ### Limpar TUDO (produtos + categorias) e recriar
 
 ```bash
-python manage.py create_categories --quantity=20 --clear --force
+$ python manage.py create_categories --quantity=20 --clear --force
 ```
 
 #### Criar 20 categorias simples (sem modificadores)
 
 ```bash
-python manage.py create_categories --quantity=20 --simple
+$ python manage.py create_categories --quantity=20 --simple
 ```
 
 #### Criar com seed para testes reproduzíveis
 
 ```bash
-python manage.py create_categories --quantity=10 --seed=42 --clear
+$ python manage.py create_categories --quantity=10 --seed=42 --clear
 ```
 
 **Como funciona:**
@@ -191,147 +191,112 @@ description = fake.text(max_nb_chars=200)
 <br>
 
 
-### Fornecedores
+### Fornecedores (`create_suppliers`)
 
-```py
-from faker import Faker
+Popula a tabela `Supplier` com fornecedores brasileiros gerados dinamicamente.
 
-fake = Faker('pt_BR')
+**Uso básico:**
+
+```bash
+$ python manage.py create_suppliers
 ```
+
+**Opções:**
+
+- `--quantity N`: Cria N fornecedores (padrão: 30, máximo: 1000)
+- `--clear`: Remove todos os fornecedores antes de criar novos
+- `--seed N`: Define seed para reprodutibilidade
+
+**Exemplos:**
+
+#### Criar 30 fornecedores (padrão)
+
+```bash
+$ python manage.py create_suppliers
+```
+
+#### Criar 50 fornecedores
+
+```bash
+$ python manage.py create_suppliers --quantity=50 --clear
+```
+
+#### Dados reproduzíveis para testes
+
+```bash
+$ python manage.py create_suppliers --quantity=20 --seed=42 --clear
+```
+
+**Recursos:**
+
+- **Nomes realistas:** Empresas brasileiras típicas (Silva & Oliveira Ltda, etc)
+- **CNPJs formatados:** Padrão XX.XXX.XXX/XXXX-XX
+- **Emails corporativos:** Baseados no nome da empresa
+- **Telefones brasileiros:** Celulares (9XXXX-XXXX) e fixos
+- **Endereços completos:** Com bairro, cidade, estado e CEP
 
 #### Nome da empresa
 
-```py
-company_name = fake.company()
-CNPJ (formato: XX.XXX.XXX/XXXX-XX)
 
-cnpj = fake.numerify(text='##.###.###/####-##')
+
+<br>
+
+---
+
+<br>
+
+
+
+### Movimentações de Estoque (`create_movements`)
+
+Popula a tabela `StockMovement` com movimentações de estoque e atualiza quantidades dos produtos.
+
+**Pré-requisitos:** Produtos criados e pelo menos um usuário no sistema.
+
+**Uso básico:**
+
+```bash
+$ python manage.py create_movements
 ```
 
-#### Nome do contato
+**Opções:**
 
-```py
-contact_name = fake.name()
+- `--quantity N`: Cria N movimentações (padrão: 200, máximo: 10000)
+- `--clear`: Remove movimentações e reseta estoques
+- `--seed N`: Define seed para reprodutibilidade
+- `--days N`: Distribui movimentações nos últimos N dias (padrão: 90)
+- `--update-stock`: Atualiza estoque dos produtos (padrão: True)
+
+**Exemplos:**
+
+#### Criar 200 movimentações (padrão)
+
+```bash
+$ python manage.py create_movements
+```
+#### 500 movimentações nos últimos 30 dias
+
+```bash
+$ python manage.py create_movements --quantity=500 --days=30 --clear
+```
+#### Dados reproduzíveis
+
+```bash
+$ python manage.py create_movements --quantity=300 --seed=42 --clear
 ```
 
-#### Email corporativo
+**Recursos:**
 
-```py
-email = fake.company_email()
-```
+- **Distribuição realista:** 40% entradas, 45% saídas, 15% ajustes
+- **Datas distribuídas:** Últimos 90 dias por padrão
+- **Razões contextuais:** Motivos específicos para cada tipo
+- **Atualização automática:** Estoques atualizados conforme movimentações
+- **Quantidades lógicas:** Entradas maiores, saídas menores
 
-#### Telefone (formato brasileiro)
 
-```py
-phone = fake.phone_number()
-```
 
-#### Endereço completo
+<br>
 
-```py
-address = fake.street_address()
-city = fake.city()
-state = fake.state()
-postal_code = fake.postcode()
+---
 
-print(f"Empresa: {company_name}")
-print(f"CNPJ: {cnpj}")
-print(f"Contato: {contact_name}")
-print(f"Email: {email}")
-print(f"Telefone: {phone}")
-print(f"Endereço: {address}, {city} - {state}, CEP: {postal_code}")
-```
-
-### Movimentações de Estoque
-
-```py
-from faker import Faker
-from datetime import datetime
-
-fake = Faker('pt_BR')
-```
-
-#### Tipo de movimentação
-
-```py
-movement_types = ['entrada', 'saida', 'ajuste']
-movement_type = fake.random_element(elements=movement_types)
-```
-
-#### Quantidade
-
-```py
-quantity = fake.random_int(min=1, max=100)
-```
-
-#### Data (últimos 90 dias)
-
-```py
-movement_date = fake.date_between(start_date='-90d', end_date='today')
-```
-
-#### Razão/Descrição
-
-```py
-reasons = {
-    'entrada': [
-        'Compra de fornecedor',
-        'Devolução de cliente',
-        'Transferência de estoque'
-    ],
-    'saida': [
-        'Venda ao cliente',
-        'Devolução ao fornecedor',
-        'Perda/Avaria'
-    ],
-    'ajuste': [
-        'Correção de inventário',
-        'Ajuste por auditoria',
-        'Correção de lançamento'
-    ]
-}
-
-reason = fake.random_element(elements=reasons[movement_type])
-
-print(f"Tipo: {movement_type}")
-print(f"Quantidade: {quantity}")
-print(f"Data: {movement_date}")
-print(f"Razão: {reason}")
-```
-
-## Dicas e Boas Práticas
-
-### 1. Usar Seed para Testes Reproduzíveis
-
-```py
-Faker.seed(0) # Sempre gera os mesmos dados
-```
-
-### 2. Gerar Múltiplos Registros
-
-```py
-fake = Faker('pt_BR')
-
-products = []
-for i in range(100):
-    products.append({
-        'name': fake.word().capitalize(),
-        'sku': fake.lexify(text='???######'),
-        'price': fake.pydecimal(left_digits=4, right_digits=2, positive=True)
-    })
-```
-
-### 3. Evitar Duplicatas
-
-#### Para SKUs únicos
-
-```py
-used_skus = set()
-
-def generate_unique_sku():
-while True:
-sku = fake.lexify(text='???') + fake.numerify(text='######')
-if sku not in used_skus:
-used_skus.add(sku)
-return sku
-```
+<br>
