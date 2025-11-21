@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import F, ExpressionWrapper, DecimalField, Count, Sum, Q
 import csv
 
 from apps.products.models import Product
@@ -60,6 +60,9 @@ class StockReportView(LoginRequiredMixin, ListView):
                 F('stock_quantity') * F('price'),
                 output_field=DecimalField(max_digits=15, decimal_places=2)
             )
+        ).only(
+            'id', 'name', 'sku', 'stock_quantity', 'minimum_stock', 'price',
+            'category__name'
         ).order_by('name')
 
         # Filtro por status estoque
@@ -79,23 +82,29 @@ class StockReportView(LoginRequiredMixin, ListView):
         """
         context = super().get_context_data(**kwargs)
 
-        # Calcula totais gerais
-        all_products = Product.objects.all()
-        context['total_products'] = all_products.count()
-        context['total_stock_value'] = sum(
-            p.stock_quantity * p.price for p in all_products
+        # Cálculos agregados otimizados (executados no banco)
+        stats = Product.objects.aggregate(
+            total_products=Count('id'),
+            total_stock_value=Sum(
+                ExpressionWrapper(
+                    F('stock_quantity') * F('price'),
+                    output_field=DecimalField()
+                )
+            ),
+            low_stock_count=Count(
+                'id',
+                filter=Q(stock_quantity__lte=F('minimum_stock'))
+            )
         )
-        context['low_stock_count'] = Product.objects.filter(
-            stock_quantity__lte=F('minimum_stock')
-        ).count()
 
-        # Calcula o valor total da página atual
-        page_products = context['products']     # -> queryset da pág atual
-        context['page_total_value'] = sum(
-            product.stock_quantity * product.price for product in page_products
-        )
-
+        context.update(stats)
+        context['page_sizes'] = [50, 100, 200]
+        context['current_page_size'] = int(self.request.GET.get('page_size', 50))
+        context['page_total_value'] = sum(p.total_value for p in context['products'])
         return context
+    
+    def get_paginate_by(self, queryset):
+        return self.request.GET.get('page_size', self.paginate_by)
 
 
 class MovementReportView(LoginRequiredMixin, ListView):

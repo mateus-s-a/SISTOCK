@@ -58,7 +58,9 @@ class MovementListView(LoginRequiredMixin, ListView):
     # Filtro
     def get_queryset(self):
         """ Sobrescreve o queryset para aplicar filtros de busca e tipo """
-        queryset = super().get_queryset().select_related('product', 'user').order_by('-created_at')
+        
+        queryset = super().get_queryset().select_related('product__category', 'user').order_by('-created_at')
+
         self.filter = StockMovementFilter(self.request.GET, queryset=queryset)
         return self.filter.qs
     
@@ -66,7 +68,12 @@ class MovementListView(LoginRequiredMixin, ListView):
         """ Adiciona o objeto de filtro ao contexto """
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
+        context['page_sizes'] = [20, 50, 100]
+        context['current_page_size'] = int(self.request.GET.get('page_size', 20))
         return context
+    
+    def get_paginate_by(self, queryset):
+        return self.request.GET.get('page_size', self.paginate_by)
 
 
 

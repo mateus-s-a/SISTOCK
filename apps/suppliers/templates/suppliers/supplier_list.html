@@ -59,6 +59,30 @@
         </div>
     </div>
 
+    <!-- Controle de Itens por Página e controle -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <form method="get" class="d-inline">
+                <label class="me-2">Itens por página:</label>
+                <select name="page_size" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                    {% for size in page_sizes %}
+                        <option value="{{ size }}" {% if size == current_page_size %}selected{% endif %}>{{ size }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Preserva outros parâmetros GET -->
+                {% for key, value in request.GET.items %}
+                    {% if key != 'page_size' and key != 'page' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+        <div class="text-muted">
+            Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} resultados
+        </div>
+    </div>
+
+
     <div class="card shadow-sm">
         <div class="card-body">
             <table class="table table-hover">

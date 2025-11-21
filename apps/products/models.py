@@ -38,6 +38,12 @@ class Product(models.Model):
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
         ordering = ["name"]
+        indexes = [
+            models.Index(fields=['sku'], name='product_sku_idx'),
+            models.Index(fields=['name'], name='product_name_idx'),
+            models.Index(fields=['stock_quantity'], name='product_stock_idx'),
+            models.Index(fields=['-created_at'], name='product_created_idx'),
+        ]
     
     def __str__(self):
         return f"{self.name} ({self.sku})"
