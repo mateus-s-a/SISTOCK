@@ -27,7 +27,14 @@ class ProductListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Adiciona busca simples ao queryset"""
-        queryset = super().get_queryset().select_related('category').order_by('name')
+        
+        # queryset = super().get_queryset().select_related('category').order_by('name')
+
+        queryset = Product.objects.select_related('category').only(
+            'id', 'name', 'sku', 'price', 'stock_quantity', 'minimum_stock',
+            'category__name'
+        ).order_by('name')
+        
         self.filter = ProductFilter(self.request.GET, queryset=queryset)
         return self.filter.qs
 
@@ -37,7 +44,18 @@ class ProductListView(LoginRequiredMixin, ListView):
         """
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
+
+        # Adiciona opções de paginação personalizável
+        context['page_sizes'] = [15, 30, 50, 100]
+        context['current_page_size'] = int(self.request.GET.get('page_size', 15))
+
         return context
+    
+    def get_paginate_by(self, queryset):
+        """
+        Permite ao usuário escolher quantos itens ver por página
+        """
+        return self.request.GET.get('page_size', self.paginate_by)
     
 
 class ProductDetailView(LoginRequiredMixin, DetailView):

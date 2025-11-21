@@ -27,6 +27,11 @@ class StockMovement(models.Model):
         verbose_name = "Movimentação de Estoque"
         verbose_name_plural = "Movimentações de Estoque"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=['-created_at'], name='movement_created_idx'),
+            models.Index(fields=['movement_type'], name='movement_type_idx'),
+            models.Index(fields=['product', '-created_at'], name='movement_product_created_idx'),
+        ]
     
     def get_movement_type_display(self):
         return dict(self.MOVEMENT_TYPES).get(self.movement_type, 'Desconhecido')

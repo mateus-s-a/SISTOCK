@@ -26,7 +26,12 @@ class SupplierListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """ Adiciona busca simples por nome, email ou CNPJ """
-        queryset = super().get_queryset().order_by('name')
+        
+        # queryset = super().get_queryset().order_by('name')
+        queryset = Supplier.objects.only(
+            'id', 'name', 'contact_person', 'email', 'phone'
+        ).order_by('name')
+
         self.filter = SupplierFilter(self.request.GET, queryset=queryset)
         return self.filter.qs
     
@@ -34,7 +39,12 @@ class SupplierListView(LoginRequiredMixin, ListView):
         """ Adiciona o objeto de filtro ao contexto """
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
+        context['page_sizes'] = [15, 30, 50]
+        context['current_page_size'] = int(self.request.GET.get('page_size', 15))
         return context
+    
+    def get_paginate_by(self, queryset):
+        return self.request.GET.get('page_size', self.paginate_by)
 
 
 

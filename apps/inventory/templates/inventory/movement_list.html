@@ -40,6 +40,28 @@
     </div>
 </div>
 
+<!-- Controle de Itens por Página e contagem -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <form method="get" class="d-inline">
+            <label class="me-2">Itens por página:</label>
+            <select name="page_size" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                {% for size in page_sizes %}
+                    <option value="{{ size }}" {% if size == current_page_size %}selected{% endif %}>{{ size }}</option>
+                {% endfor %}
+            </select>
+            {% for key, value in request.GET.items %}
+                {% if key != 'page_size' and key != 'page' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+        </form>
+    </div>
+    <div class="text-muted">
+        Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} resultados
+    </div>
+</div>
+
 <!-- Tabela de Movimentações -->
 <div class="card">
     <div class="card-body table-responsive">
@@ -58,7 +80,7 @@
                 {% for movement in movements %}
                 <tr>
                     <td>{{ movement.created_at|date:"d/m/Y H:i" }}</td>
-                    <td>{{ movement.product.name }} ({{ movement.product.sku }})</td>
+                    <td>{{ movement.product.name }} ({{ movement.product.category.name }}) <small><code>{{ movement.product.sku }}</code></small> </td>
                     <td>
                         {% if movement.movement_type == 'IN' %}
                         <span class="badge bg-success">Entrada</span>
