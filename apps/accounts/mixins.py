@@ -68,4 +68,39 @@ def role_required(allowed_roles=None, redirect_url='inventory:dashboard'):
     
     def decorator(view_func):
         @wraps(view_func)
-        def _
+        def _wrapped_view(request, *args, **kwargs):
+            # Usuário não autenticado
+            if not request.user.is_authenticated:
+                messages.error(request, 'Você precisa estar autenticado.')
+                return redirect('login')
+            
+            # Superuser sempre tem acesso
+            if request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+            
+            # Verifica role
+            if hasattr(request.user, 'profile'):
+                if request.user.profile.role in allowed_roles:
+                    return view_func(request, *args, **kwargs)
+            
+            # Sem permissão
+            messages.error(request, 'Você não tem permissão para acessar esta página.')
+            return redirect(redirect_url)
+        
+        return _wrapped_view
+    return decorator
+
+
+def admin_required(view_func):
+    """Apenas Admins"""
+    return role_required(['ADMIN'])(view_func)
+
+
+def manager_or_admin_required(view_func):
+    """Managers e Admins"""
+    return role_required(['ADMIN', 'MANAGER'])(view_func)
+
+
+def staff_or_above_required(view_func):
+    """Todos autenticados"""
+    return role_required(['ADMIN', 'MANAGER', 'STAFF'])(view_func)
