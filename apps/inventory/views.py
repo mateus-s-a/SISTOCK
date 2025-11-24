@@ -9,6 +9,7 @@ from django.db.models import F, Q
 
 from apps.products.models import Product
 from apps.suppliers.models import Supplier
+from apps.accounts.mixins import StaffOrAboveRequiredMixin
 from .models import StockMovement
 from .forms import StockMovementForm
 from .filters import StockMovementFilter
@@ -77,7 +78,7 @@ class MovementListView(LoginRequiredMixin, ListView):
 
 
 
-class MovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class MovementCreateView(StaffOrAboveRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Criação Movimentação"""
     model = StockMovement
     form_class = StockMovementForm
@@ -85,6 +86,11 @@ class MovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = reverse_lazy('inventory:movement_list')
     # success_url = reverse_lazy('inventory:dashboard')
     success_message = "Movimentação de estoque registrada com sucesso."
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         """

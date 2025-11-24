@@ -1,10 +1,26 @@
 {% extends 'base.html' %}
 
+{% load role_tags %}
+
 {% block title %}Dashboard - SISTOCK{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>
+            <i class="fas fa-user-shield me-2"></i>
+            Você está logado como: <strong>{% user_role request.user %}</strong>
+        </span>
+        {% if request.user|has_role:"ADMIN" %}
+            <span class="badge bg-danger">Acesso Total</span>
+        {% elif request.user|has_role:"MANAGER" %}
+            <span class="badge bg-warning text-dark">Gerenciamento</span>
+        {% else %}
+            <span class="badge bg-secondary">Operacional</span>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Cards de Estatísticas -->

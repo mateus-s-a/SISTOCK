@@ -20,7 +20,13 @@ class StockMovementForm(forms.ModelForm):
         quantity = cleaned_data.get('quantity')
         product = cleaned_data.get('product')
 
+        
+        
         if not all([movement_type, quantity, product]):
+            if self.user and hasattr(self.user, 'profile'):
+                if self.user.profile.role == 'STAFF' and movement_type != StockMovement.IN:
+                    self.add_error('movement_type', "Como Operador/Staff, você somente pode registrar movimentações de entrada.")
+                    
             return cleaned_data  # Campos obrigatórios não preenchidos
         
 
@@ -36,3 +42,13 @@ class StockMovementForm(forms.ModelForm):
         if movement_type == StockMovement.OUT:
             if product.stock_quantity < quantity:
                 self.add_error('quantity', f"Estoque insuficiente. Quantidade disponível: {product.stock_quantity}.")
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Limita tipo de movimentação para STAFF
+        if self.user and hasattr(self.user, 'profile') and self.user.profile.role == 'STAFF':
+            self.fields['movement_type'].choices = [
+                (StockMovement.IN, 'Entrada')
+            ]

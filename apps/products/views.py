@@ -69,7 +69,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class ProductCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class ProductCreateView(ManagerOrAdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Cria Produto"""
     model = Product
     form_class = ProductForm
