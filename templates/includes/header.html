@@ -22,6 +22,13 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
+                        {% if request.user|has_role:"ADMIN" %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'accounts:user_register' %}">
+                                <i class="fas fa-user-plus me-1"></i> Registrar Usuário
+                            </a>
+                        </li>
+                        {% endif %}
                         <li>
                             <form method="POST" action="{% url 'accounts:logout' %}" style="display: inline;">
                                 {% csrf_token %}

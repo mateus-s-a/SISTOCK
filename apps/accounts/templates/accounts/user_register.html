@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - SISTOCK{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">
+                <i class="fas fa-user-plus me-2"></i>{{ title }}
+            </h3>
+            <p class="text-muted mb-0">{{ subtitle }}</p>
+        </div>
+        <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Voltar para Usuários
+        </a>
+    </div>
+
+    <!-- Card do Formulário -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Dados do Novo Usuário
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Mensagens de Feedback -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle me-2"></i>
+                                {% elif message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Formulário -->
+                    <form method="post" novalidate id="registerForm">
+                        {% csrf_token %}
+
+                        <!-- Seção: Informações de Login -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Informações de Login
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.username|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.email|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Informações Pessoais -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Informações Pessoais
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.first_name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.last_name|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Senha -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-lock me-2"></i>Senha de Acesso
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.password1|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.password2|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Permissões -->
+                        <div class="mb-4">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-shield-alt me-2"></i>Nível de Acesso
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    {{ form.role|as_crispy_field }}
+                                    
+                                    <!-- Legenda dos Roles -->
+                                    <div class="alert alert-info mt-2">
+                                        <small>
+                                            <strong>Níveis de acesso disponíveis:</strong><br>
+                                            <i class="fas fa-crown text-danger"></i> <strong>Admin:</strong> Acesso total ao sistema<br>
+                                            <i class="fas fa-user-tie text-warning"></i> <strong>Manager:</strong> Pode criar/editar (não excluir)<br>
+                                            <i class="fas fa-user text-secondary"></i> <strong>Staff:</strong> Pode visualizar e registrar entradas
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save me-1"></i> Cadastrar Usuário
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para validação visual em tempo real -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const password1 = document.querySelector('input[name="password1"]');
+    const password2 = document.querySelector('input[name="password2"]');
+
+    // Validação de senha em tempo real
+    if (password2) {
+        password2.addEventListener('input', function() {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('As senhas não conferem');
+                password2.classList.add('is-invalid');
+            } else {
+                password2.setCustomValidity('');
+                password2.classList.remove('is-invalid');
+                password2.classList.add('is-valid');
+            }
+        });
+    }
+
+    // Loading no botão durante submit
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Cadastrando...';
+    });
+});
+</script>
+
+{% endblock %}
