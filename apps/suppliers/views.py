@@ -13,6 +13,8 @@ from .models import Supplier
 from .forms import SupplierForm
 from .filters import SupplierFilter
 
+from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin
+
 
 # Create your views here.
 
@@ -56,7 +58,7 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class SupplierCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class SupplierCreateView(ManagerOrAdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Criação Fornecedor"""
     model = Supplier
     form_class = SupplierForm
@@ -73,7 +75,7 @@ class SupplierCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 
 
-class SupplierUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class SupplierUpdateView(ManagerOrAdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """Edição Fornecedor"""
     model = Supplier
     form_class = SupplierForm
@@ -89,7 +91,7 @@ class SupplierUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return context
 
 
-class SupplierDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+class SupplierDeleteView(AdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     """Exclusão Fornecedor"""
     model = Supplier
     template_name = 'suppliers/supplier_confirm_delete.html'

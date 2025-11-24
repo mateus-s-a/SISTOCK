@@ -13,6 +13,8 @@ from .models import Product, Category
 from .forms import ProductForm, CategoryForm
 from .filters import ProductFilter
 
+from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin, admin_required
+
 
 # Create your views here.
 
@@ -67,7 +69,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
 
 
 
-class ProductCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class ProductCreateView(ManagerOrAdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """Cria Produto"""
     model = Product
     form_class = ProductForm
@@ -84,8 +86,8 @@ class ProductCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
 
 
-class ProductUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    """Edição Produto"""
+class ProductUpdateView(ManagerOrAdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    """Edição Produto - MANAGER ou ADMIN"""
     model = Product
     form_class = ProductForm
     template_name = 'products/product_form.html'    # Template reutilizável
@@ -101,13 +103,19 @@ class ProductUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     
 
 
-class ProductDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    """Exclusão Produto"""
+class ProductDeleteView(AdminRequiredMixin, LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    """Exclusão Produto - apenas ADMIN"""
     model = Product
     template_name = 'products/product_confirm_delete.html'
     success_url = reverse_lazy('products:product_list')
     success_message = 'Produto excluído com sucesso.'
     # template_name = 'products/product_delete.html'
+
+    # @admin_required
+    # def delete_all_products(request):
+    #     Product.objects.all().delete()
+    #     messages.success(request, 'Todos os produtos foram removidos.')
+    #     return redirect('products:product_list')
 
 
 
@@ -129,3 +137,4 @@ class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = reverse_lazy('products:category_list')
     success_message = 'Categoria criada com sucesso.'
     # template_name = 'products/category_create.html'
+
