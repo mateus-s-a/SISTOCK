@@ -15,7 +15,7 @@
             <p class="text-muted mb-0">{{ subtitle }}</p>
         </div>
         <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Voltar para Usuários
+            <i class="fas fa-arrow-left me-1"></i> Voltar para Usuários (Painel do Admin Django)
         </a>
     </div>
 
@@ -121,7 +121,7 @@
 
                         <!-- Botões de Ação -->
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-secondary">
+                            <a href="{% url 'inventory:dashboard' %}"     class="btn btn-secondary">
                                 <i class="fas fa-times me-1"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
