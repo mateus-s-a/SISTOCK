@@ -6,8 +6,11 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import JsonResponse
+from django.db.models import Q
 
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
@@ -66,6 +69,45 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     template_name = 'products/product_detail.html'
     success_url = reverse_lazy('products:product_detail')
     context_object_name = 'product'
+
+
+class ProductAutocompleteView(View):
+    """
+    API endpoint para autocomplete de produtos.
+    Retorna JSON com produtos que correspondem ao termo de busca.
+    """
+
+    def get(self, request):
+        # Pega o termo de busca
+        query = request.GET.get('q', '').strip()
+
+        # Retorna vazio se query for muito curta
+        if len(query) < 2:
+            return JsonResponse({'results': []})
+        
+        # Busca produtos (case-insensitive, busca parcial)
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(sku__icontains=query) |
+            Q(description__icontains=query)
+        ).select_related('category').only(
+            'id', 'name', 'sku', 'stock_quantity', 'price', 'category__name'
+        )[:10]  # Limita a 10 resultados
+
+        # Formata resultados como JSON
+        results = []
+        for product in products:
+            results.append({
+                'id': product.id,
+                'name': product.name,
+                'sku': product.sku,
+                'category': product.category.name if product.category else 'Sem categoria',
+                'stock': product.stock_quantity,
+                'price': float(product.price),
+                'url': f'/products/{product.id}/',  # URL para detalhes
+            })
+        
+        return JsonResponse({'results': results})
 
 
 

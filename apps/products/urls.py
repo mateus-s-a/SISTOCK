@@ -5,6 +5,7 @@ app_name = 'products'
 
 urlpatterns = [
     path('', views.ProductListView.as_view(), name='product_list'),
+    path('api/autocomplete/', views.ProductAutocompleteView.as_view(), name='product_autocomplete'),
     path('add/', views.ProductCreateView.as_view(), name='product_create'),
     path('<int:pk>/', views.ProductDetailView.as_view(), name='product_detail'),
     path('<int:pk>/edit/', views.ProductUpdateView.as_view(), name='product_update'),
