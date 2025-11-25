@@ -18,49 +18,34 @@
         {% endif %}
     </div>
 
-    <!-- Filtros -->
+    <!-- NOVA SEARCHBAR COM AUTOCOMPLETE -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Filtros de Busca</h5>
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-search me-2"></i>Buscar Fornecedores
+            </h5>
         </div>
         <div class="card-body">
-            <form method="get" class="row g-3">
-                <!--
-                <div class="col-md-4">
-                    {{ filter.form.name|as_crispy_field }}
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Busca Rápida</label>
+                    <input 
+                        type="text" 
+                        id="supplierSearch" 
+                        class="form-control form-control-lg" 
+                        placeholder="Digite o nome, email ou CNPJ do fornecedor..."
+                        autocomplete="off"
+                    >
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        A busca funciona para nome, email e CNPJ
+                    </small>
                 </div>
-                <div class="col-md-3">
-                    {{ filter.form.email|as_crispy_field }}
-                </div>
-                <div class="col-md-3">
-                    {{ filter.form.cnpj|as_crispy_field }}
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filtrar
-                    </button>
-                </div> 
-                -->
+            </div>
 
-                <div class="col-md-3">
-                    {{ filter.form.name|as_crispy_field }}
-                </div>
-                <div class="col-md-3">
-                    {{ filter.form.email|as_crispy_field }}
-                </div>
-                <div class="col-md-3">
-                    {{ filter.form.cnpj|as_crispy_field }}
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-filter"></i> Filtrar
-                    </button>
-                    <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-outline-danger w-100">
-                        <i class="fas fa-redo"></i> Limpar
-                    </a>
-                </div>
-
-            </form>
+            <button type="button" class="btn btn-outline-secondary" onclick="clearSupplierSearch()">
+                <i class="fas fa-times"></i> Limpar Busca
+            </button>
         </div>
     </div>
 
@@ -166,3 +151,51 @@
 </div>
 
 {% endblock %}
+
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const supplierSearchInput = document.getElementById('supplierSearch');
+
+    if (supplierSearchInput) {
+        const autocomplete = new Autocomplete(supplierSearchInput, '{% url "suppliers:supplier_autocomplete" %}', {
+            minChars: 2,
+            debounceTime: 300,
+
+            formatResult: function(result, query) {
+                const highlightText = (text) => {
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    return text.replace(regex, '<span class="highlight">$1</span>');
+                };
+
+                return `
+                    <div class="autocomplete-item-title">
+                        ${highlightText(result.name)}
+                    </div>
+                    <div class="autocomplete-item-subtitle">
+                        <i class="fas fa-envelope"></i> ${result.email} | 
+                        <i class="fas fa-phone"></i> ${result.phone || 'Sem telefone'}
+                    </div>
+                `;
+            },
+
+            onSelect: function(result) {
+                window.location.href = result.url;
+            }
+        });
+    }
+});
+
+function clearSupplierSearch() {
+    document.getElementById('supplierSearch').value = '';
+    const results = document.querySelector('.autocomplete-results');
+    if (results) {
+        results.classList.remove('show');
+    }
+}
+</script>
+
+{% endblock extra_js %}
