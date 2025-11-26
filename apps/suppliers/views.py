@@ -19,7 +19,7 @@ from .forms import SupplierForm
 from .filters import SupplierFilter
 
 from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin
-
+from django_ratelimit.decorators import ratelimit
 
 # Create your views here.
 
@@ -61,11 +61,12 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
     template_name = 'suppliers/supplier_detail.html'
     context_object_name = 'supplier'
 
-
+@method_decorator(ratelimit(key='ip', rate='30/m', method='GET'), name='dispatch')  # Rate limiting para prevenir abuso API
 @method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
 class SupplierAutocompleteView(View):
     """
     API endpoint para autocomplete de fornecedores
+    API com rate limit: máximo 30 requisições por minuto por IP.
     Cache: 5 minutos para reduzir carga no DB.
     """
 

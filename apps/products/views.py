@@ -19,6 +19,7 @@ from .forms import ProductForm, CategoryForm
 from .filters import ProductFilter
 
 from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin, admin_required
+from django_ratelimit.decorators import ratelimit
 
 
 # Create your views here.
@@ -73,10 +74,12 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'product'
 
 
+@method_decorator(ratelimit(key='ip', rate='30/m', method='GET'), name='dispatch')  # Rate limiting para prevenir abuso API
 @method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
 class ProductAutocompleteView(View):
     """
     API endpoint para autocomplete de produtos.
+    API com rate limit: máximo 30 requisições por minuto por IP.
     Retorna JSON com produtos que correspondem ao termo de busca.
     Cache: 5 minutos para reduzir carga no DB.
     """

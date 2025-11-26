@@ -90,13 +90,30 @@ class Autocomplete {
         this.showLoading();
 
         try {
-            const response = await fetch(`${this.apiUrl}?q=${encodeURIComponent(query)}`);
-            const data = await response.json();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);   // Timeout de 5s
+            
+            const response = await fetch(
+                `${this.apiUrl}?q=${encodeURIComponent(query)}`,
+                { signal: controller.signal }
+            );
 
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
             this.displayResults(data.results, query);
+
         } catch (error) {
-            console.error('Erro no autocomplete:', error);
-            this.showError();
+            if (error.name === 'AbortError') {
+                this.showError('A busca demorou muito. Tente novamente.');
+            } else {
+                console.error('Erro no autocomplete:', error);
+                this.showError('Erro ao buscar. Verifique sua conexão.');
+            }
         }
     }
 
@@ -109,10 +126,10 @@ class Autocomplete {
         this.showResults();
     }
 
-    showError() {
+    showError(message = 'Erro ao buscar') {
         this.resultsContainer.innerHTML = `
             <div class="autocomplete-empty text-danger">
-                <i class="fas fa-exclamation-triangle"></i> Erro ao buscar
+                <i class="fas fa-exclamation-triangle"></i> ${message}
             </div>
         `;
     }
