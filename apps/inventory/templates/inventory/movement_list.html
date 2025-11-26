@@ -15,31 +15,49 @@
     </a>
 </div>
 
-<!-- Formulário de Filtros -->
+<!-- NOVA SEARCHBAR COM AUTOCOMPLETE -->
 <div class="card mb-3">
-    <div class="card-header">
-        <h5 class="mb-0">Filtros de Busca</h5>
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="fas fa-search me-2"></i>Buscar Movimentações
+        </h5>
     </div>
     <div class="card-body">
-        <form class="row g-3" method="get">
-            <div class="col-md-4">
-                {{ filter.form.product|as_crispy_field }}
+        <div class="row">
+            <!-- Searchbar Principal -->
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Busca Rápida</label>
+                <input 
+                    type="text" 
+                    id="movementSearch" 
+                    class="form-control form-control-lg" 
+                    placeholder="Digite o produto, SKU, usuário ou motivo..."
+                    autocomplete="off"
+                >
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    Busca por produto, SKU, usuário que registrou ou motivo da movimentação
+                </small>
             </div>
-            <div class="col-md-3">
-                {{ filter.form.movement_type|as_crispy_field }}
+
+            <!-- Filtro Rápido por Tipo -->
+            <div class="col-md-4 mb-3">
+                <form method="get" id="typeFilterForm">
+                    <label class="form-label">Filtrar por Tipo</label>
+                    {{ filter.form.movement_type|as_crispy_field }}
+                </form>
             </div>
-            <div class="col-md-3">
-                {{ filter.form.user__username|as_crispy_field }}
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100 me-2">
-                    <i class="fas fa-filter"></i> Filtrar
-                </button>
-                <a href="{% url 'inventory:movement_list' %}" class="btn-outline-danger w-100">
-                    <i class="fas fa-redo"></i> Limpar
-                </a>
-            </div>
-        </form>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" onclick="clearMovementSearch()">
+                <i class="fas fa-times"></i> Limpar Busca
+            </button>
+            <a href="{% url 'inventory:movement_list' %}" class="btn btn-outline-danger">
+                <i class="fas fa-redo"></i> Resetar Filtros
+            </a>
+        </div>
     </div>
 </div>
 
@@ -136,5 +154,80 @@
 </nav>
 
 {% endif %}
+
+{% endblock %}
+
+
+
+
+{% block extra_js %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa autocomplete para movimentações
+    const movementSearchInput = document.getElementById('movementSearch');
+
+    if (movementSearchInput) {
+        const autocomplete = new Autocomplete(movementSearchInput, '{% url "inventory:movement_autocomplete" %}', {
+            minChars: 2,
+            debounceTime: 300,
+
+            // Formata cada resultado
+            formatResult: function(result, query) {
+                const highlightText = (text) => {
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    return text.replace(regex, '<span class="highlight">$1</span>');
+                };
+
+                // Badge de tipo de movimentação
+                let typeBadge = '';
+                if (result.movement_type === 'IN') {
+                    typeBadge = '<span class="badge bg-success">Entrada</span>';
+                } else if (result.movement_type === 'OUT') {
+                    typeBadge = '<span class="badge bg-danger">Saída</span>';
+                } else {
+                    typeBadge = '<span class="badge bg-warning text-dark">Ajuste</span>';
+                }
+
+                return `
+                    <div class="autocomplete-item-title">
+                        ${highlightText(result.product_name)} ${typeBadge}
+                    </div>
+                    <div class="autocomplete-item-subtitle">
+                        <i class="fas fa-box"></i> SKU: de>${result.product_sku}</code> | 
+                        <i class="fas fa-sort-amount-up"></i> Qtd: ${result.quantity} | 
+                        <i class="fas fa-user"></i> ${highlightText(result.user)} | 
+                        <i class="fas fa-calendar"></i> ${result.created_at}
+                        ${result.reason !== 'Sem motivo' ? '<br><small class="text-muted"><i class="fas fa-comment"></i> ' + highlightText(result.reason) + '</small>' : ''}
+                    </div>
+                `;
+            },
+
+            // Ação ao selecionar
+            onSelect: function(result) {
+                // Redireciona para detalhes da movimentação
+                window.location.href = result.url;
+            }
+        });
+    }
+
+    // Auto-submit do filtro de tipo
+    const typeSelect = document.querySelector('select[name="movement_type"]');
+    if (typeSelect) {
+        typeSelect.addEventListener('change', function() {
+            document.getElementById('typeFilterForm').submit();
+        });
+    }
+});
+
+// Função para limpar busca
+function clearMovementSearch() {
+    document.getElementById('movementSearch').value = '';
+    const results = document.querySelector('.autocomplete-results');
+    if (results) {
+        results.classList.remove('show');
+    }
+}
+</script>
 
 {% endblock %}

@@ -6,15 +6,20 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.views import View
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import JsonResponse
+from django.db.models import Q
+from django.utils.decorators import method_decorator
 
 from .models import Supplier
 from .forms import SupplierForm
 from .filters import SupplierFilter
 
 from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin
-
+from django_ratelimit.decorators import ratelimit
 
 # Create your views here.
 
@@ -55,6 +60,44 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
     model = Supplier
     template_name = 'suppliers/supplier_detail.html'
     context_object_name = 'supplier'
+
+@method_decorator(ratelimit(key='ip', rate='30/m', method='GET'), name='dispatch')  # Rate limiting para prevenir abuso API
+@method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
+class SupplierAutocompleteView(View):
+    """
+    API endpoint para autocomplete de fornecedores
+    API com rate limit: máximo 30 requisições por minuto por IP.
+    Cache: 5 minutos para reduzir carga no DB.
+    """
+
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+
+        if len(query) < 2:
+            return JsonResponse({'results': []})
+        
+        suppliers = Supplier.objects.filter(
+            Q(name__icontains=query) |
+            Q(email__icontains=query) |
+            Q(cnpj__icontains=query)
+        ).only('id', 'name', 'email', 'phone').order_by('name')[:10]
+
+        results = [
+            {
+                'id': s.id,
+                'name': s.name,
+                'email': s.email,
+                'phone': s.phone,
+                'url': f'/suppliers/{s.id}/'
+            }
+            for s in suppliers
+        ]
+        
+        return JsonResponse({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
 
 
 

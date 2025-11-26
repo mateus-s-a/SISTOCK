@@ -1,3 +1,5 @@
+import logging
+
 from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
@@ -6,14 +8,23 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from django.views import View
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import JsonResponse
+from django.db.models import Q
+from django.utils.decorators import method_decorator
 
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
 from .filters import ProductFilter
 
 from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin, admin_required
+from django_ratelimit.decorators import ratelimit
+
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -66,6 +77,57 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     template_name = 'products/product_detail.html'
     success_url = reverse_lazy('products:product_detail')
     context_object_name = 'product'
+
+
+
+@method_decorator(ratelimit(key='ip', rate='30/m', method='GET'), name='dispatch')  # Rate limiting para prevenir abuso API
+@method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
+class ProductAutocompleteView(View):
+    """
+    API endpoint para autocomplete de produtos.
+    API com rate limit: máximo 30 requisições por minuto por IP.
+    Retorna JSON com produtos que correspondem ao termo de busca.
+    Cache: 5 minutos para reduzir carga no DB.
+    """
+
+    def get(self, request):
+        # Pega o termo de busca
+        query = request.GET.get('q', '').strip()
+
+        # Retorna vazio se query for muito curta
+        if len(query) < 2:
+            return JsonResponse({'results': []})
+        
+        logger.info(f"Autocomplete search: query='{query}' ip={request.META.get('REMOTE_ADDR')}")
+        
+        # Busca produtos (case-insensitive, busca parcial)
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(sku__icontains=query) |
+            Q(description__icontains=query)
+        ).select_related('category').only(
+            'id', 'name', 'sku', 'stock_quantity', 'price', 'category__name'
+        ).order_by('name')[:10]  # Limita a 10 resultados
+
+        # Formata resultados como JSON
+        results = [
+            {
+                'id': p.id,
+                'name': p.name,
+                'sku': p.sku,
+                'category': p.category.name if p.category else 'Sem categoria',
+                'stock': p.stock_quantity,
+                'price': float(p.price),
+                'url': f'/products/{p.id}/',  # URL para detalhes
+            }
+            for p in products
+        ]
+
+        return JsonResponse({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
 
 
 
