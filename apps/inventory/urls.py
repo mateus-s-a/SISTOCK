@@ -5,6 +5,7 @@ app_name = 'inventory'
 
 urlpatterns = [
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('api/autocomplete/', views.MovementAutocompleteView.as_view(), name='movement_autocomplete'),
 
     path('movements/', views.MovementListView.as_view(), name='movement_list'),
     path('movements/add/', views.MovementCreateView.as_view(), name='movement_create'),

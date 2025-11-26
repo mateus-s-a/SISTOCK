@@ -2,10 +2,14 @@ from django.db import transaction
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, CreateView, ListView, DetailView
+from django.views.decorators.cache import cache_page
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.db.models import F, Q
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 
 from apps.products.models import Product
 from apps.suppliers.models import Supplier
@@ -36,6 +40,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Busca as 10 movimentações mais recentes
         recent_activities = StockMovement.objects.select_related('product', 'user').order_by('-created_at')[:10]
+        # recent_activities = StockMovement.objects.select_related('product', 'user').only(
+        #     'id', 'created_at', 'movement_type', 'quantity', 'reason',
+        #     'product__name', 'product__sku',
+        #     'user__username', 'user__first_name', 'user__last_name'
+        # ).order_by('-created_at')[:10]
 
         context.update({
             'total_products': total_products,
@@ -75,6 +84,69 @@ class MovementListView(LoginRequiredMixin, ListView):
     
     def get_paginate_by(self, queryset):
         return self.request.GET.get('page_size', self.paginate_by)
+
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')  # Cache de 5 minutos
+class MovementAutocompleteView(View):
+    """
+    API endpoint para autocomplete de movimentações.
+    Busca por: nome do produto, SKU, tipo de movimentação, usuário.
+    """
+
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+
+        # Retorna vazio se query muito curta
+        if len(query) < 2:
+            return JsonResponse({'results': []})
+        
+        # Busca movimentações (case-insensitive, busca parcial)
+        movements = StockMovement.objects.filter(
+            Q(product__name__icontains=query) |
+            Q(product__sku__icontains=query) |
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(reason__icontains=query)
+        ).select_related(
+            'product', 'user'
+        ).only(
+            'id', 'created_at', 'movement_type', 'quantity', 'reason',
+            'product__name', 'product__sku',
+            'user__username', 'user__first_name', 'user__last_name'
+        ).order_by('-created_at')[:10]      # Limita a 10 resultados mais recentes
+
+        # Mapeamento de tipos para display
+        type_display = {
+            'IN': 'Entrada',
+            'OUT': 'Saída',
+            'ADJ': 'Ajuste'
+        }
+
+        # Formata resultados como JSON
+        results = []
+        for movement in movements:
+            user_display = movement.user.get_full_name() or movement.user.username
+
+            results.append({
+                'id': movement.id,
+                'product_name': movement.product.name,
+                'product_sku': movement.product.sku,
+                'movement_type': movement.movement_type,
+                'movement_type_display': type_display.get(movement.movement_type, movement.movement_type),
+                'quantity': movement.quantity,
+                'user': user_display,
+                'reason': movement.reason or 'Sem motivo',
+                'created_at': movement.created_at.strftime('%d/%m/%Y %H:%M'),
+                'url': f'/inventory/movements/{movement.id}/'
+            })
+        
+        return JsonResponse({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
 
 
 
