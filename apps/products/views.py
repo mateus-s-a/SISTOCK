@@ -1,3 +1,5 @@
+import logging
+
 from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
@@ -20,6 +22,9 @@ from .filters import ProductFilter
 
 from apps.accounts.mixins import AdminRequiredMixin, ManagerOrAdminRequiredMixin, admin_required
 from django_ratelimit.decorators import ratelimit
+
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -74,6 +79,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'product'
 
 
+
 @method_decorator(ratelimit(key='ip', rate='30/m', method='GET'), name='dispatch')  # Rate limiting para prevenir abuso API
 @method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
 class ProductAutocompleteView(View):
@@ -91,6 +97,8 @@ class ProductAutocompleteView(View):
         # Retorna vazio se query for muito curta
         if len(query) < 2:
             return JsonResponse({'results': []})
+        
+        logger.info(f"Autocomplete search: query='{query}' ip={request.META.get('REMOTE_ADDR')}")
         
         # Busca produtos (case-insensitive, busca parcial)
         products = Product.objects.filter(
