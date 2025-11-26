@@ -7,10 +7,12 @@ from django.views.generic import (
     DeleteView,
 )
 from django.views import View
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.db.models import Q
+from django.utils.decorators import method_decorator
 
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
@@ -71,10 +73,12 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'product'
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
 class ProductAutocompleteView(View):
     """
     API endpoint para autocomplete de produtos.
     Retorna JSON com produtos que correspondem ao termo de busca.
+    Cache: 5 minutos para reduzir carga no DB.
     """
 
     def get(self, request):
@@ -92,22 +96,27 @@ class ProductAutocompleteView(View):
             Q(description__icontains=query)
         ).select_related('category').only(
             'id', 'name', 'sku', 'stock_quantity', 'price', 'category__name'
-        )[:10]  # Limita a 10 resultados
+        ).order_by('name')[:10]  # Limita a 10 resultados
 
         # Formata resultados como JSON
-        results = []
-        for product in products:
-            results.append({
-                'id': product.id,
-                'name': product.name,
-                'sku': product.sku,
-                'category': product.category.name if product.category else 'Sem categoria',
-                'stock': product.stock_quantity,
-                'price': float(product.price),
-                'url': f'/products/{product.id}/',  # URL para detalhes
-            })
-        
-        return JsonResponse({'results': results})
+        results = [
+            {
+                'id': p.id,
+                'name': p.name,
+                'sku': p.sku,
+                'category': p.category.name if p.category else 'Sem categoria',
+                'stock': p.stock_quantity,
+                'price': float(p.price),
+                'url': f'/products/{p.id}/',  # URL para detalhes
+            }
+            for p in products
+        ]
+
+        return JsonResponse({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
 
 
 

@@ -42,6 +42,7 @@ class Product(models.Model):
             models.Index(fields=['sku'], name='product_sku_idx'),
             models.Index(fields=['name'], name='product_name_idx'),
             models.Index(fields=['stock_quantity'], name='product_stock_idx'),
+            models.Index(fields=['name', 'sku'], name='product_search_idx'),
             models.Index(fields=['-created_at'], name='product_created_idx'),
         ]
     

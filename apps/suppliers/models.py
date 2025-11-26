@@ -14,6 +14,11 @@ class Supplier(models.Model):
         verbose_name = "Fornecedor"
         verbose_name_plural = "Fornecedores"
         ordering = ["name"]
+        indexes = [
+            models.Index(fields=['name'], name='supplier_name_idx'),
+            models.Index(fields=['email'], name='supplier_email_idx'),
+            models.Index(fields=['cnpj'], name='supplier_cnpj_idx'),
+        ]
 
     def __str__(self):
         return self.name

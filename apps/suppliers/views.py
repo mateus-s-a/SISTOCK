@@ -7,10 +7,12 @@ from django.views.generic import (
     DeleteView,
 )
 from django.views import View
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.db.models import Q
+from django.utils.decorators import method_decorator
 
 from .models import Supplier
 from .forms import SupplierForm
@@ -60,8 +62,12 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'supplier'
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')      # Cache de 5 minutos
 class SupplierAutocompleteView(View):
-    """API endpoint para autocomplete de fornecedores"""
+    """
+    API endpoint para autocomplete de fornecedores
+    Cache: 5 minutos para reduzir carga no DB.
+    """
 
     def get(self, request):
         query = request.GET.get('q', '').strip()
@@ -73,19 +79,24 @@ class SupplierAutocompleteView(View):
             Q(name__icontains=query) |
             Q(email__icontains=query) |
             Q(cnpj__icontains=query)
-        ).only('id', 'name', 'email', 'phone')[:10]
+        ).only('id', 'name', 'email', 'phone').order_by('name')[:10]
 
-        results = []
-        for supplier in suppliers:
-            results.append({
-                'id': supplier.id,
-                'name': supplier.name,
-                'email': supplier.email,
-                'phone': supplier.phone,
-                'url': f'/suppliers/{supplier.id}/'
-            })
+        results = [
+            {
+                'id': s.id,
+                'name': s.name,
+                'email': s.email,
+                'phone': s.phone,
+                'url': f'/suppliers/{s.id}/'
+            }
+            for s in suppliers
+        ]
         
-        return JsonResponse({'results': results})
+        return JsonResponse({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
 
 
 
