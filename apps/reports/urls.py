@@ -9,4 +9,6 @@ urlpatterns = [
     path('movements/', views.MovementReportView.as_view(), name='movement_report'),
     path('export/stock/', views.export_stock_csv, name='export_stock_csv'),
     path('export/movements/', views.export_movements_csv, name='export_movements_csv'),
+
+    path('users/', views.UserReportView.as_view(), name='user_report'),
 ]

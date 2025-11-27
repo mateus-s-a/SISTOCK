@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, CreateView, ListView, DetailView
 from django.views.decorators.cache import cache_page
 from django.views import View
+from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
@@ -38,13 +39,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         low_stock_products = Product.objects.low_stock().select_related('category')
         low_stock_count = low_stock_products.count()
 
-        # Busca as 10 movimentações mais recentes
+        # Busca as 10 movimentações mais recentes (MÉTRICA)
         recent_activities = StockMovement.objects.select_related('product', 'user').order_by('-created_at')[:10]
         # recent_activities = StockMovement.objects.select_related('product', 'user').only(
         #     'id', 'created_at', 'movement_type', 'quantity', 'reason',
         #     'product__name', 'product__sku',
         #     'user__username', 'user__first_name', 'user__last_name'
         # ).order_by('-created_at')[:10]
+
+        # Usuários Ativos (MÉTRICA)
+        active_users_count = User.objects.filter(is_active=True).count()
 
         context.update({
             'total_products': total_products,
@@ -53,6 +57,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'low_stock_products': low_stock_products[:5],   # <- 5 produtos abaixo do estoque
             'total_movements': total_movements,
             'recent_activities': recent_activities,
+            'active_users': active_users_count,
         })
         return context
 
