@@ -25,27 +25,27 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="text-muted">Nome da Empresa</div>
-                        <div class="fw-semibold">Fornecedor A</div>
+                        <div class="fw-semibold">{{ supplier.name }}</div>
                     </div>
                     <div class="col-md-6">
                         <div class="text-muted">Pessoa de Contato</div>
-                        <div class="fw-semibold">João Silva</div>
+                        <div class="fw-semibold">{{ supplier.contact_person }}</div>
                     </div>
                     <div class="col-md-6">
                         <div class="text-muted">Email</div>
-                        <div><a href="mailto:contato@fornecedora.com">contato@fornecedora.com</a></div>
+                        <div><a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a></div>
                     </div>
                     <div class="col-md-6">
                         <div class="text-muted">Telefone</div>
-                        <div>(11) 99999-9999</div>
+                        <div>{{ supplier.phone }}</div>
                     </div>
                     <div class="col-md-6">
                         <div class="text-muted">CNPJ</div>
-                        <div>12.345.678/0001-90</div>
+                        <div>{{ supplier.cnpj }}</div>
                     </div>
                     <div class="col-12">
                         <div class="text-muted">Endereço</div>
-                        <div>Rua das Flores, 123 - Centro - São Paulo/SP</div>
+                        <div>{{ supplier.address }}</div>
                     </div>
                 </div>
             </div>
@@ -53,8 +53,11 @@
     </div>
 </div>
 
+<!--
 <div class="alert alert-info mt-3">
     <i class="fas fa-info-circle me-1"></i> 
     Dados demonstrativos para o fornecedor ID {{ request.resolver_match.kwargs.pk }}.
 </div>
+-->
+
 {% endblock %}
