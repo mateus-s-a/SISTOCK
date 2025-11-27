@@ -1,5 +1,6 @@
 from django import forms
 from .models import Category, Product
+from django_select2.forms import ModelSelect2Widget
 
 class CategoryForm(forms.ModelForm):
     """
@@ -12,6 +13,13 @@ class CategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 3}),
         }
 
+class CategoryWidget(ModelSelect2Widget):
+    search_fields = [
+        'name__icontains',
+        'description__icontains',
+    ]
+
+
 class ProductForm(forms.ModelForm):
     """
     Formulário para criar e editar Produtos com validações customizados.
@@ -23,6 +31,12 @@ class ProductForm(forms.ModelForm):
             'price', 'stock_quantity', 'minimum_stock',
         ]
         widgets = {
+            'category': CategoryWidget(
+                attrs={
+                    'data-placeholder': 'Digite para buscar uma categoria...',
+                    'class': 'flex-grow-1',
+                },
+            ),
             'description': forms.Textarea(attrs={'rows': 3}),
         }
     

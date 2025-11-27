@@ -39,6 +39,8 @@ urlpatterns = [
 
     # Root redirect
     path('', redirect_to_dashboard, name='root'),
+    
+    path('select2/', include('django_select2.urls')),
 ]
 
 

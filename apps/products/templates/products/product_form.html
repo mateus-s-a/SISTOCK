@@ -3,6 +3,8 @@
 
 {% block title %}{{ form_title }}{% endblock %}
 
+
+
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-sm">
@@ -24,11 +26,11 @@
                 </div>
 
                 <!-- Campo Categoria Customizado com Botão -->
-                <div class="mb-3">
-                    <label for="id_category" class="form-label requiredField">
-                        Categoria<span class="asteriskField">*</span>
+                <div class="mb-3 col-md-4">
+                    <label for="{{ form.category.id_for_label" class="form-label requiredField">
+                        Categoria<span class="asteriskField">*</span>   
                     </label>
-                    <div class="input-group">
+                    <div class="input-group flex-grow-1">
                         {{ form.category }}
                         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#createCategoryModal" title="Criar Nova Categoria">
                             <i class="fas fa-plus"></i>

@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/autocomplete.css' %}">
     
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+    {{ form.media.css }}
+    {% endblock %}
 </head>
 <body>
     <div class="d-flex" id="wrapper">
@@ -60,6 +62,9 @@
     <!-- AutoComplete JS -->
     <script src="{% static 'js/autocomplete.js' %}"></script>
     
-    {% block extra_js %}{% endblock %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_js %}
+    {{ form.media.js }}
+    {% endblock %}
 </body>
 </html>
