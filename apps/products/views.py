@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -11,6 +12,7 @@ from django.views.generic import (
 from django.views import View
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
 from django.db.models import Q
@@ -200,3 +202,32 @@ class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_message = 'Categoria criada com sucesso.'
     # template_name = 'products/category_create.html'
 
+
+class CategoryCreateAjaxView(ManagerOrAdminRequiredMixin, View):
+    """
+    Cria uma categoria via AJAX e retorna JSON.
+    Usado no modal de criação rápida dentro do form de produtos.
+    """
+
+    def post(self, request, *args, **kwargs):
+        # Como o JS envia FormData, os dados estão em request.JSON
+        # Não é necessário (e causa erro) ler request.body
+
+        form = CategoryForm(request.POST)
+
+        if form.is_valid():
+            category = form.save()
+            return JsonResponse({
+                'success': True,
+                'category': {
+                    'id': category.id,
+                    'name': category.name
+                },
+                'message': 'Categoria criada com sucesso'
+            })
+        else:
+            # Retorna erros do formulário para o frontend
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            }, status=400)

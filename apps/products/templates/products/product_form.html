@@ -12,17 +12,60 @@
         <div class="card-body">
             <form method="post" novalidate>
                 {% csrf_token %}
-                {{ form|crispy }}
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Salvar
-                    </button>
-                    <a href="{% url 'products:product_list' %}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancelar
-                    </a>
+
+                <!-- Renderiza campos manualmente para customizar o campo Categoria -->
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.name|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.sku|as_crispy_field }}
+                    </div>
                 </div>
+
+                <!-- Campo Categoria Customizado com Botão -->
+                <div class="mb-3">
+                    <label for="id_category" class="form-label requiredField">
+                        Categoria<span class="asteriskField">*</span>
+                    </label>
+                    <div class="input-group">
+                        {{ form.category }}
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#createCategoryModal" title="Criar Nova Categoria">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    {% if form.category.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.category.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Resto dos campos -->
+                <div class="row">
+                    <div class="col-md-4">{{ form.price|as_crispy_field }}</div>
+                    <div class="col-md-4">{{ form.stock_quantity|as_crispy_field }}</div>
+                    <div class="col-md-4">{{ form.minimum_stock|as_crispy_field }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.description|as_crispy_field }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="{% url 'products:product_list' %}" class="btn btn-secondary">Cancelar</a>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Inclui o Modal -->
+{% include "products/components/modal_create_category.html" %}
+
+<style>
+    #div_id_category { display: none; } /* Esconde o campo automático se ele for gerado duplicado */
+    #id_category { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+</style>
+
+
 {% endblock %}
