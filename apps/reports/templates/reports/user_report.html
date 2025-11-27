@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - SISTOCK{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 text-gray-800"><i class="fas fa-users-cog me-2"></i>{{ page_title }}</h1>
+    <a href="{% url 'reports:report_index' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar aos Relatórios
+    </a>
+</div>
+
+<!-- Cards de Resumo -->
+<div class="row mb-4">
+    <!-- Total Usuários -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Cadastrado</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ativos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Usuários Ativos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-check fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Novos (30 dias) -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Novos (30 dias)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">+{{ new_users_30d }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-plus fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inativos -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-secondary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Inativos/Bloqueados</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ inactive_users }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-user-lock fa-2x text-gray-300"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Coluna Esquerda: Distribuição por Papel -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-primary text-white">
+                <h6 class="m-0 fw-bold"><i class="fas fa-chart-pie me-2"></i>Distribuição por Papel</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-crown text-danger me-2"></i> Administradores</span>
+                        <span class="badge bg-danger rounded-pill">{{ users_by_role.ADMIN }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-user-tie text-warning me-2"></i> Gerentes</span>
+                        <span class="badge bg-warning text-dark rounded-pill">{{ users_by_role.MANAGER }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-user text-secondary me-2"></i> Staff/Operacional</span>
+                        <span class="badge bg-secondary rounded-pill">{{ users_by_role.STAFF }}</span>
+                    </div>
+                </div>
+                
+                <!-- Botão de Ação Rápida -->
+                <div class="mt-4 text-center">
+                    <a href="{% url 'accounts:user_register' %}" class="btn btn-primary w-100">
+                        <i class="fas fa-user-plus me-2"></i> Cadastrar Novo Usuário
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita: Últimos Cadastrados -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-success text-white">
+                <h6 class="m-0 fw-bold"><i class="fas fa-history me-2"></i>Últimos Usuários Cadastrados</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Email</th>
+                                <th>Papel</th>
+                                <th class="text-end">Data Cadastro</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light text-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:35px; height:35px; font-weight:bold;">
+                                            {{ user.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold">{{ user.username }}</span><br>
+                                            <small class="text-muted">{{ user.get_full_name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email|default:"-" }}</td>
+                                <td>
+                                    {% if user.profile.role == 'ADMIN' %}
+                                        <span class="badge bg-danger">Admin</span>
+                                    {% elif user.profile.role == 'MANAGER' %}
+                                        <span class="badge bg-warning text-dark">Manager</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Staff</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {{ user.date_joined|date:"d/m/Y" }}
+                                    <small class="d-block text-muted">{{ user.date_joined|date:"H:i" }}</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if user.is_active %}
+                                        <i class="fas fa-check-circle text-success" title="Ativo"></i>
+                                    {% else %}
+                                        <i class="fas fa-ban text-danger" title="Inativo"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Nenhum usuário encontrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-center">
+                <a href="{% url 'admin:auth_user_changelist' %}" class="text-decoration-none small">
+                    Ver todos os usuários no Admin <i class="fas fa-external-link-alt ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

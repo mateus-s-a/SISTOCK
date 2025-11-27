@@ -1,11 +1,14 @@
 from django.shortcuts import render, HttpResponse
 from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.db.models import F, ExpressionWrapper, DecimalField, Count, Sum, Q
 import csv
 
 from apps.products.models import Product
 from apps.inventory.models import StockMovement
+from apps.accounts.mixins import AdminRequiredMixin
+from apps.accounts.models import Profile
 from datetime import datetime, timedelta
 from django.utils import timezone
 
@@ -170,6 +173,50 @@ class MovementReportView(LoginRequiredMixin, ListView):
         context['selected_type'] = self.request.GET.get('type', '')
 
         return context
+
+
+class UserReportView(AdminRequiredMixin, LoginRequiredMixin, TemplateView):
+    """
+    Relatório detalhado de usuários, papéis e atividades recentes.
+    Apenas acessível por ADMIN.
+    """
+    template_name = 'reports/user_report.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Total de Usuários Ativos vs Inativos
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+        inactive_users = total_users - active_users
+
+        # 2. Distribuição por Papel (Role)
+        # 'aggregate' para performance ou 'queries' separadas para clareza
+        users_by_role = {
+            'ADMIN': Profile.objects.filter(role='ADMIN', user__is_active=True).count(),
+            'MANAGER': Profile.objects.filter(role='MANAGER', user__is_active=True).count(),
+            'STAFF': Profile.objects.filter(role='STAFF', user__is_active=True).count(),
+        }
+
+        # 3. Novos usuários nos últimos 30 dias
+        last_30_days = timezone.now() - timedelta(days=30)
+        new_users_30d = User.objects.filter(date_joined__gte=last_30_days).count()
+
+        # 4. Lista de Últimos Cadastrados (Top 10)
+        recent_users = User.objects.select_related('profile').order_by('-date_joined')[:10]
+
+        context.update({
+            'total_users': total_users,
+            'active_users': active_users,
+            'inactive_users': inactive_users,
+            'users_by_role': users_by_role,
+            'new_users_30d': new_users_30d,
+            'recent_users': recent_users,
+            'page_title': 'Relatório de Usuários e Acessos',
+        })
+
+        return context
+
 
 
 def export_stock_csv(request):
