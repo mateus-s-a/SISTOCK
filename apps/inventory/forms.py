@@ -1,5 +1,14 @@
 from django import forms
 from .models import StockMovement, Product
+from django_select2.forms import ModelSelect2Widget
+
+
+class ProductWidget(ModelSelect2Widget):
+    search_fields = [
+        'name__icontains',
+        'sku__icontains',
+    ]
+
 
 class StockMovementForm(forms.ModelForm):
     """
@@ -10,6 +19,11 @@ class StockMovementForm(forms.ModelForm):
     class Meta:
         model = StockMovement
         fields = ['product', 'movement_type', 'quantity', 'reason']
+        widgets = {
+            'product': ProductWidget(
+                attrs={'data-placeholder': 'Digite o nome ou SKU do produto...'}
+            ),
+        }
     
     def clean(self):
         """
