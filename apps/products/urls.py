@@ -13,4 +13,5 @@ urlpatterns = [
     
     path('categories/', views.CategoryListView.as_view(), name='category_list'),
     path('categories/add/', views.CategoryCreateView.as_view(), name='category_create'),
+    path('category/create/ajax/', views.CategoryCreateAjaxView.as_view(), name='category_create_ajax'),
 ]

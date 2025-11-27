@@ -1,0 +1,95 @@
+<!-- Modal de Criação Rápida de Categoria -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-folder-plus me-2"></i>Nova Categoria
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickCategoryForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Nome da Categoria *</label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required>
+                        <div class="invalid-feedback" id="categoryNameError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="categoryDescription" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="submitCategoryForm()">
+                    <i class="fas fa-save me-1"></i> Salvar Categoria
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para pegar o CSRF token do formulário
+function getCsrfToken() {
+    return document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+}
+
+function submitCategoryForm() {
+    const form = document.getElementById('quickCategoryForm');
+    const nameInput = document.getElementById('categoryName');
+    const descriptionInput = document.getElementById('categoryDescription');
+    const modalEl = document.getElementById('createCategoryModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    
+    // Reset erros
+    nameInput.classList.remove('is-invalid');
+    
+    const formData = new FormData(form);
+    
+    fetch('{% url "products:category_create_ajax" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCsrfToken()  // <-- Adicione esta linha
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Se a resposta não for OK (ex: 400), trata como erro
+            return response.json().then(errorData => {
+                throw errorData;
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Sucesso (status 2xx)
+        const categorySelect = document.querySelector('select[name="category"]');
+        if (categorySelect) {
+            const option = new Option(data.category.name, data.category.id, true, true);
+            categorySelect.add(option);
+            categorySelect.dispatchEvent(new Event('change'));
+        }
+        
+        form.reset();
+        modal.hide();
+        alert(data.message || 'Categoria criada com sucesso!');
+    })
+    .catch(errorData => {
+        // Erro (status 4xx, 5xx ou erro de rede)
+        if (errorData.errors && errorData.errors.name) {
+            nameInput.classList.add('is-invalid');
+            document.getElementById('categoryNameError').textContent = errorData.errors.name[0];
+        } else {
+            console.error('Erro:', errorData);
+            alert('Erro ao criar categoria. Verifique os dados e tente novamente.');
+        }
+    });
+}
+</script>
+
