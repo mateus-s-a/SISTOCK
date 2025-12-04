@@ -27,6 +27,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     """Dashboard"""
     template_name = 'inventory/dashboard.html'
 
+    # Adiciona métricas ao contexto
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -50,11 +51,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Usuários Ativos (MÉTRICA)
         active_users_count = User.objects.filter(is_active=True).count()
 
+        # Atualiza o contexto com as métricas (context = dicionário que armazena dados para a view renderizar)
         context.update({
             'total_products': total_products,
             'total_suppliers': total_suppliers,
             'low_stock_count': low_stock_count,
-            'low_stock_products': low_stock_products[:5],   # <- 5 produtos abaixo do estoque
+            'low_stock_products': low_stock_products[:5],   # <-- aparece 5 produtos abaixo do estoque
             'total_movements': total_movements,
             'recent_activities': recent_activities,
             'active_users': active_users_count,
@@ -70,7 +72,7 @@ class MovementListView(LoginRequiredMixin, ListView):
     context_object_name = 'movements'
     paginate_by = 20
 
-    # Filtro
+    # Filtro de busca e tipo (get_queryset = é um método que retorna o conjunto de dados a ser exibido na view)
     def get_queryset(self):
         """ Sobrescreve o queryset para aplicar filtros de busca e tipo """
         
@@ -79,6 +81,7 @@ class MovementListView(LoginRequiredMixin, ListView):
         self.filter = StockMovementFilter(self.request.GET, queryset=queryset)
         return self.filter.qs
     
+    # Adiciona o filtro ao contexto (get_context_data = é um método que adiciona dados adicionais ao contexto da view)
     def get_context_data(self, **kwargs):
         """ Adiciona o objeto de filtro ao contexto """
         context = super().get_context_data(**kwargs)
@@ -87,6 +90,7 @@ class MovementListView(LoginRequiredMixin, ListView):
         context['current_page_size'] = int(self.request.GET.get('page_size', 20))
         return context
     
+    # Permite paginação dinâmica via query parameter
     def get_paginate_by(self, queryset):
         return self.request.GET.get('page_size', self.paginate_by)
 
@@ -99,6 +103,7 @@ class MovementAutocompleteView(View):
     Busca por: nome do produto, SKU, tipo de movimentação, usuário.
     """
 
+    # GET method para busca de movimentações
     def get(self, request):
         query = request.GET.get('q', '').strip()
 
@@ -147,6 +152,7 @@ class MovementAutocompleteView(View):
                 'url': f'/inventory/movements/{movement.id}/'
             })
         
+        # Retorna resposta JSON com resultados e contagem
         return JsonResponse({
             'results': results,
             'count': len(results),
@@ -164,11 +170,13 @@ class MovementCreateView(StaffOrAboveRequiredMixin, LoginRequiredMixin, SuccessM
     # success_url = reverse_lazy('inventory:dashboard')
     success_message = "Movimentação de estoque registrada com sucesso."
 
+    # Passa o usuário logado para o formulário para validações específicas
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
+    # Sobrescreve o método para associar o usuário e atualizar o estoque do produto
     def form_valid(self, form):
         """
         Sobrescreve o método para associar o usuário e atualizar o estoque
@@ -178,7 +186,7 @@ class MovementCreateView(StaffOrAboveRequiredMixin, LoginRequiredMixin, SuccessM
         # Associa o usuário logado à movimentação
         form.instance.user = self.request.user
 
-        # Usa uma transação para garantir a consistência dos dados
+        # Usa uma transação para garantir a consistência dos dados (movimentação + atualização de estoque)
         with transaction.atomic():
             response = super().form_valid(form)
 
@@ -204,6 +212,7 @@ class MovementDetailView(LoginRequiredMixin, DetailView):
     template_name = 'inventory/movement_detail.html'
     context_object_name = 'movement'
 
+    # Otimiza a consulta para incluir dados do produto e do usuário
     def get_queryset(self):
         """
         Otimiza a consulta para incluir dados do produto e do usuário
@@ -219,6 +228,7 @@ class StockAlertsView(LoginRequiredMixin, ListView):
     context_object_name = 'low_stock_products'
     paginate_by = 20
 
+    # Retorna produtos com estoque baixo para Dashboard
     def get_queryset(self):
         # Retorna produtos com estoque baixo para Dashboard
         return Product.objects.low_stock().select_related('category').order_by('stock_quantity')
