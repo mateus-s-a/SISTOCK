@@ -96,6 +96,7 @@ class MovementListView(LoginRequiredMixin, ListView):
 
 
 
+# Cache de 5 minutos para impedir múltiplas consultas idênticas em curto período
 @method_decorator(cache_page(60 * 5), name='dispatch')  # Cache de 5 minutos
 class MovementAutocompleteView(View):
     """
