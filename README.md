@@ -73,7 +73,7 @@ pip install -r requirements.txt
 
 ### 4. Configuração do Banco de Dados
 
-#### Variáveis de Ambiente
+#### Variáveis de Ambiente **(OPCIONAL)**
 
 Crie um arquivo `.env` na raiz do projeto:
 
@@ -145,11 +145,6 @@ python manage.py create_products
 **Criar usuário administrador:**
 ```bash
 python manage.py createsuperuser
-```
-
-**Carregar fixtures (dados pré-configurados):**
-```bash
-python manage.py loaddata apps/products/fixtures/categories.json
 ```
 
 ### 5. Execute o servidor de desenvolvimento
