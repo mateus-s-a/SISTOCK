@@ -1,14 +1,28 @@
 {% extends 'base.html' %}
 
+{% load role_tags %}
+
 {% block title %}{{ product.name }} - SISTOCK{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0"><i class="fas fa-box me-2"></i>{{ product.name }}</h3>
     <div>
+        <!-- Excluir: apenas Admin e Manager -->
+        {% if request.user|has_role:"ADMIN,MANAGER" %}
         <a href="{% url 'products:product_update' product.id %}" class="btn btn-outline-primary">
             <i class="fas fa-edit me-1"></i> Editar
         </a>
+        {% endif %}
+        
+        <!-- Excluir: apenas Admin -->
+        {% if request.user|has_role:"ADMIN" %}
+        <a href="{% url 'products:product_delete' product.pk %}" 
+            class="btn btn-outline-danger">
+            <i class="fas fa-trash me-1"></i> Excluir
+        </a>
+        {% endif %}
+
         <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Voltar
         </a>
@@ -48,11 +62,11 @@
             <div class="card-body">
                 <div class="mb-3">
                     <div class="text-muted">Estoque Atual</div>
-                    <div class="fw-bold fs-4">{{ product.stock }}</div>
+                    <div class="fw-bold fs-4">{{ product.stock_quantity }}</div>
                 </div>
                 <div class="mb-3">
                     <div class="text-muted">Estoque Mínimo</div>
-                    <div>10</div>
+                    <div class="fw-bold fs-4">{{ product.minimum_stock }}</div>
                 </div>
                 <div>
                     <a href="{% url 'inventory:movement_create' %}" class="btn btn-primary btn-sm w-100">
@@ -64,8 +78,11 @@
     </div>
 </div>
 
+<!--
 <div class="alert alert-info mt-3">
     <i class="fas fa-info-circle me-1"></i> 
     Dados demonstrativos baseados no ID {{ product.id }}.
 </div>
+-->
+
 {% endblock %}

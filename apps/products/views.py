@@ -1,5 +1,6 @@
 import logging
 import json
+from multiprocessing import ProcessError
 
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -13,10 +14,12 @@ from django.views import View
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, ProtectedError
 from django.utils.decorators import method_decorator
+from django.shortcuts import redirect
 
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
@@ -174,6 +177,31 @@ class ProductDeleteView(AdminRequiredMixin, LoginRequiredMixin, SuccessMessageMi
     success_url = reverse_lazy('products:product_list')
     success_message = 'Produto excluído com sucesso.'
     # template_name = 'products/product_delete.html'
+
+    def post(self, request, *args, **kwargs):
+        """
+        Sobrescreve o método post para tratar o ProtectedError
+        """
+        self.object = self.get_object()
+
+        try:
+            # Tenta deletar o objeto
+            self.object.delete()
+            # Adiciona a mensagem de sucesso
+            messages.success(request, self.success_message)
+            # Redireciona para a URL de sucesso
+            return redirect(self.get_success_url())
+        
+        except ProtectedError:
+            # Se a exclusão for bloqueada por uma chave estrangeira protegida
+            error_message = (
+                f'O produto "{self.object.name}" não pode ser excluído. '
+                'Ele possui um histórico de movemntações de estoque associado. '
+                'Para removê-lo, considere desativá-lo ou arquivá-lo.'
+            )
+            messages.error(request, error_message)
+            # Redireciona de volta para a lista de produtos
+            return redirect('products:product_list')
 
     # @admin_required
     # def delete_all_products(request):
