@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import widgets
 from .models import Category, Product
 from django_select2.forms import ModelSelect2Widget
 
@@ -26,18 +27,11 @@ class ProductForm(forms.ModelForm):
     """
     class Meta:
         model = Product
-        fields = [
-            'name', 'sku', 'category', 'description',
-            'price', 'stock_quantity', 'minimum_stock',
-        ]
+        fields = '__all__'
         widgets = {
             'category': CategoryWidget(
-                attrs={
-                    'data-placeholder': 'Digite para buscar uma categoria...',
-                    'class': 'flex-grow-1',
-                },
+                attrs={'data-placeholder': 'Digite para buscar uma categoria...'}
             ),
-            'description': forms.Textarea(attrs={'rows': 3}),
         }
     
     def clean_sku(self):
